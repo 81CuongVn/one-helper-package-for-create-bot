@@ -240,3 +240,4 @@ export class Command {
     if (this.LogForMessageAndInteraction) Log.debug(processName, ...rest);
   }
 }
+export { Log } from './module/LogClass';
