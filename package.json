@@ -1,12 +1,12 @@
 {
   "name": "bot-discord-v2",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.0.1",
+  "description": "the one package help you create a bot with discord",
   "main": "./src/index.ts",
   "scripts": {
     "dev": "nodemon test/index.ts"
   },
-  "author": "",
+  "author": "Tritran Duc <tritranduc> (https://github.com/tritranduc)",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^17.0.21",
@@ -21,5 +21,17 @@
     "discord.js": "^13.6.0",
     "dotenv": "^16.0.0",
     "moment": "^2.29.1"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tritranduc/one-helper-package-for-create-bot.git"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/tritranduc/one-helper-package-for-create-bot/issues"
+  },
+  "homepage": "https://github.com/tritranduc/one-helper-package-for-create-bot#readme"
 }
