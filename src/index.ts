@@ -5,11 +5,11 @@ import { ICommand } from './types/CommandTypes';
 import { Log } from './module/LogClass';
 import { checkPermissions } from './check/permissions';
 import { checkOnlyForOwner } from './check/CheckOnlyForOwner';
+import RPC from 'discord-rpc';
 
 export interface inputType {
   commandDir: string;
   isDev?: boolean;
-
   owner?: string[];
   LogForMessageAndInteraction?: boolean;
 }
@@ -56,6 +56,7 @@ export class Command {
   }
   private scanCommand(commandDir: string[]) {
     this.LogForThisClass('scanCommand', `Scanning command ...`);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const slashCommand: any[] = [];
     for (const command of commandDir) {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -233,11 +234,40 @@ export class Command {
     this.LogForThisClass('getAllCommand', `Getting all command complete`);
     return resultCommand;
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public LogForThisClass(processName: string, ...rest: any) {
     if (this.isDev) Log.debug(processName, ...rest);
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public LogForMessageAndInteractionFunc(processName: string, ...rest: any) {
     if (this.LogForMessageAndInteraction) Log.debug(processName, ...rest);
   }
+  public SetRpc(rpc: RPC.Presence = {}) {
+    if (!this.client.application?.id) {
+      throw new Error('Bot not have application id');
+    }
+    RPC.register(this.client.application.id);
+    const RpcClient = new RPC.Client({
+      transport: 'ipc',
+    });
+    const BotAvatar = this.client.user?.displayAvatarURL();
+    RpcClient.on('ready', () => {
+      RpcClient.setActivity({
+        details: `đang phát triển bot ${this.client.user?.tag}`,
+        state: 'đang phát triển',
+        startTimestamp: new Date(),
+        largeImageKey: BotAvatar || undefined,
+        largeImageText: BotAvatar ? 'Bot Avatar' : undefined,
+        smallImageKey: BotAvatar || undefined,
+        smallImageText: BotAvatar ? 'Bot Avatar' : undefined,
+        instance: true,
+        ...rpc,
+      });
+    });
+    RpcClient.login({
+      clientId: this.client.application?.id || '',
+    });
+  }
 }
 export { Log } from './module/LogClass';
+export { ICommand } from './types/CommandTypes';

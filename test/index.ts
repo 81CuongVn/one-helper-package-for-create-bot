@@ -27,6 +27,18 @@ client.on('ready', async () => {
     isDev,
     LogForMessageAndInteraction: true,
   });
+  // const inviteLink = client.generateInvite({
+  //   scopes: ['applications.commands', 'bot'],
+  //   permissions: [Permissions.FLAGS.ADMINISTRATOR],
+  // });
+  // command.SetRpc({
+  //   buttons: [
+  //     {
+  //       label: 'add bot',
+  //       url: inviteLink,
+  //     },
+  //   ],
+  // });
   Log.Log('Client', 'Ready to go! bot name :', client.user?.tag);
 });
 

@@ -1,6 +1,5 @@
-import { Constants } from 'discord.js';
 import moment from 'moment';
-import { ICommand } from '../../types/CommandTypes';
+import { ICommand } from '../../../src/';
 
 export default {
   category: 'user',
@@ -12,17 +11,10 @@ export default {
   aliases: ['p'],
   permission: ['SEND_MESSAGES'],
   coolDown: moment.duration(10, 'seconds').asMilliseconds(),
-  options: [
-    {
-      name: 'searchKey'.toLocaleLowerCase(),
-      description: 'nhập từ khoá',
-      type: Constants.ApplicationCommandOptionTypes.STRING,
-      required: true,
-    },
-  ],
-  OnlyOwner:true,
+  options: [],
+  OnlyOwner: true,
 
-  callback: async ({ client , RawOption , args}) => {
+  callback: async ({ client }) => {
     // console.log(getAllCommand())
     // if (InteractionOrMessage instanceof Message) {
     //   console.log(InteractionOrMessage.author.username);
