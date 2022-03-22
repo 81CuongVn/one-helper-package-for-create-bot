@@ -6,14 +6,15 @@ import { Log } from './module/LogClass';
 import RPC from 'discord-rpc';
 import { checkForMessage } from './check/CheckForMessage';
 import { checkForInteraction } from './check/CheckForInteraction';
+import { OnMessageCommandDone } from './module/OnMessageCommandDone';
+import { OnInteractionCommandDone } from './module/OnInteractionCommandDone';
 
 export interface inputType {
   commandDir: string;
   isDev?: boolean;
   owner?: string[];
   LogForMessageAndInteraction?: boolean;
-  BotPrefix?: string
-  
+  BotPrefix?: string;
 }
 export class Command {
   allCommand: {
@@ -27,6 +28,9 @@ export class Command {
   isDev: boolean;
   LogForMessageAndInteraction: boolean;
   BotPrefix: string;
+  CommandTimeoutCollection: {
+    [key: string]: number;
+  };
   constructor(client: Client, input: inputType) {
     this.allCommand = {};
     this.allAliases = {};
@@ -36,6 +40,7 @@ export class Command {
     this.LogForMessageAndInteraction =
       input.LogForMessageAndInteraction || false;
     this.BotPrefix = input.BotPrefix || '!';
+    this.CommandTimeoutCollection = {};
     const commandDir = input.commandDir;
     const commandDirList = this.scanDir(commandDir);
     this.scanCommand(commandDirList);
@@ -81,6 +86,7 @@ export class Command {
       if (!guildId) return;
       if (guildId) {
         if (slashCommand) {
+          await this.client.guilds.cache.get(guildId)?.commands.set([]);
           await this.client.guilds.cache
             .get(guildId)
             ?.commands.set(slashCommand);
@@ -125,7 +131,8 @@ export class Command {
           message,
           commandFile,
           this.LogForMessageAndInteractionFunc.bind(this),
-          this.owner
+          this.owner,
+          this.CommandTimeoutCollection
         );
         if (Check) {
           message.reply(Check);
@@ -140,6 +147,11 @@ export class Command {
         if (commandResult) {
           await message.reply(commandResult);
         }
+        OnMessageCommandDone(
+          this.CommandTimeoutCollection,
+          commandFile,
+          message
+        );
         this.LogForMessageAndInteractionFunc(
           'OnMessageCreate',
           `${message.author.username} send command : '${commandName}' , All content send : '${content}' complete`
@@ -163,7 +175,8 @@ export class Command {
             interaction,
             commandFile,
             this.LogForMessageAndInteractionFunc.bind(this),
-            this.owner
+            this.owner,
+            this.CommandTimeoutCollection
           );
           if (Check) {
             interaction.editReply(Check);
@@ -180,6 +193,11 @@ export class Command {
           if (commandResult) {
             interaction.editReply(commandResult);
           }
+          OnInteractionCommandDone(
+            this.CommandTimeoutCollection,
+            commandFile,
+            interaction
+          );
         }
       }
       this.LogForMessageAndInteractionFunc(
