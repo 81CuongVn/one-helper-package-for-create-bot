@@ -8,14 +8,9 @@ import { checkForMessage } from './check/CheckForMessage';
 import { checkForInteraction } from './check/CheckForInteraction';
 import { OnMessageCommandDone } from './module/OnMessageCommandDone';
 import { OnInteractionCommandDone } from './module/OnInteractionCommandDone';
+import { messageSend } from './message';
+import { IBotMessageSend, inputType } from './types';
 
-export interface inputType {
-  commandDir: string;
-  isDev?: boolean;
-  owner?: string[];
-  LogForMessageAndInteraction?: boolean;
-  BotPrefix?: string;
-}
 export class Command {
   allCommand: {
     [key: string]: string;
@@ -31,6 +26,7 @@ export class Command {
   CommandTimeoutCollection: {
     [key: string]: number;
   };
+  BotMessageSend: IBotMessageSend;
   constructor(client: Client, input: inputType) {
     this.allCommand = {};
     this.allAliases = {};
@@ -41,6 +37,7 @@ export class Command {
       input.LogForMessageAndInteraction || false;
     this.BotPrefix = input.BotPrefix || '!';
     this.CommandTimeoutCollection = {};
+    this.BotMessageSend = input.BotMessageSend || messageSend.vi;
     const commandDir = input.commandDir;
     const commandDirList = this.scanDir(commandDir);
     this.scanCommand(commandDirList);
@@ -132,7 +129,8 @@ export class Command {
           commandFile,
           this.LogForMessageAndInteractionFunc.bind(this),
           this.owner,
-          this.CommandTimeoutCollection
+          this.CommandTimeoutCollection,
+          this.BotMessageSend
         );
         if (Check) {
           message.reply(Check);
@@ -176,7 +174,8 @@ export class Command {
             commandFile,
             this.LogForMessageAndInteractionFunc.bind(this),
             this.owner,
-            this.CommandTimeoutCollection
+            this.CommandTimeoutCollection,
+            this.BotMessageSend
           );
           if (Check) {
             interaction.editReply(Check);

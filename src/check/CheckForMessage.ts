@@ -3,7 +3,7 @@ import { Message } from 'discord.js';
 import { checkPermissions } from './permissions';
 import { checkOnlyForOwner } from './CheckOnlyForOwner';
 import { checkCommandTimeOut } from './CheckCommandTimeOut';
-import { messageSend } from '../message';
+import { IBotMessageSend } from '../types';
 
 export const checkForMessage = (
   message: Message<boolean>,
@@ -13,7 +13,8 @@ export const checkForMessage = (
   owner: string[],
   Timeout: {
     [key: string]: number;
-  }
+  },
+  BotMessageSend: IBotMessageSend
 ) => {
   if (commandFile.permission) {
     const IsHavePermission = checkPermissions(
@@ -25,7 +26,10 @@ export const checkForMessage = (
         'OnMessageCreate',
         `${message.author.username} don't have permission to use command : '${commandFile.name}'`
       );
-      return messageSend.vi.DonHavePermissionToUseCommand.replace("{command}", commandFile.name);
+      return BotMessageSend.DonHavePermissionToUseCommand.replace(
+        '{command}',
+        commandFile.name
+      );
     }
   }
   if (commandFile.OnlyOwner) {
@@ -34,14 +38,18 @@ export const checkForMessage = (
         'OnMessageCreate',
         `${message.author.username} don't have permission to use command : '${commandFile.name}' for owner`
       );
-      return messageSend.vi.DonHavePermissionToUseCommand.replace("{command}", commandFile.name);
+      return BotMessageSend.DonHavePermissionToUseCommand.replace(
+        '{command}',
+        commandFile.name
+      );
     }
   }
   if (commandFile.coolDown) {
     const commandTimeout = checkCommandTimeOut(
       commandFile,
       Timeout,
-      message.author.id
+      message.author.id,
+      BotMessageSend
     );
     if (commandTimeout) {
       logFunc(
