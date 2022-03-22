@@ -39,6 +39,7 @@ client.on('ready', async () => {
   //     },
   //   ],
   // });
+  client.user?.setUsername("bot này cui lắm")
   Log.Log('Client', 'Ready to go! bot name :', client.user?.tag);
 });
 

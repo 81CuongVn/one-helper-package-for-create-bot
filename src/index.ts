@@ -12,6 +12,8 @@ export interface inputType {
   isDev?: boolean;
   owner?: string[];
   LogForMessageAndInteraction?: boolean;
+  BotPrefix?: string
+  
 }
 export class Command {
   allCommand: {
@@ -24,6 +26,7 @@ export class Command {
   owner: string[];
   isDev: boolean;
   LogForMessageAndInteraction: boolean;
+  BotPrefix: string;
   constructor(client: Client, input: inputType) {
     this.allCommand = {};
     this.allAliases = {};
@@ -32,6 +35,7 @@ export class Command {
     this.isDev = input.isDev || false;
     this.LogForMessageAndInteraction =
       input.LogForMessageAndInteraction || false;
+    this.BotPrefix = input.BotPrefix || '!';
     const commandDir = input.commandDir;
     const commandDirList = this.scanDir(commandDir);
     this.scanCommand(commandDirList);
@@ -99,7 +103,7 @@ export class Command {
   }
   private async OnMessageCreate(message: Message<boolean>) {
     const content = message.content;
-    if (!content.startsWith('!')) {
+    if (!content.startsWith(this.BotPrefix)) {
       return;
     }
     const command = content.toLowerCase().slice(1).split(' ');
