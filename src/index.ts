@@ -45,20 +45,20 @@ export class Command {
   }
   private scanDir(dir: string) {
     this.LogForThisClass('scanDir', `Scanning ${dir} ...`);
-    let returnDir: string[] = [];
+    let resultDir: string[] = [];
     const files = fs.readdirSync(dir);
     for (const file of files) {
       const filePath = path.join(dir, file);
       const stat = fs.statSync(filePath);
       if (stat.isDirectory()) {
-        returnDir = returnDir.concat(this.scanDir(filePath));
+        resultDir = resultDir.concat(this.scanDir(filePath));
       } else if (filePath.endsWith('.ts')) {
         const commandName = path.join(dir, file.replace('.ts', ''));
-        returnDir.push(commandName);
+        resultDir.push(commandName);
       }
     }
     this.LogForThisClass('scanDir', `Scanning ${dir} complete`);
-    return returnDir;
+    return resultDir;
   }
   private scanCommand(commandDir: string[]) {
     this.LogForThisClass('scanCommand', `Scanning command ...`);
