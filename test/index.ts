@@ -39,7 +39,7 @@ client.on('ready', async () => {
   //     },
   //   ],
   // });
-  client.user?.setUsername("bot này cui lắm")
+  client.user?.setUsername('developers-bot-discord');
   Log.Log('Client', 'Ready to go! bot name :', client.user?.tag);
 });
 
