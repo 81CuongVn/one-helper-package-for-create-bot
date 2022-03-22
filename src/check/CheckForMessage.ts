@@ -3,6 +3,7 @@ import { Message } from 'discord.js';
 import { checkPermissions } from './permissions';
 import { checkOnlyForOwner } from './CheckOnlyForOwner';
 import { checkCommandTimeOut } from './CheckCommandTimeOut';
+import { messageSend } from '../message';
 
 export const checkForMessage = (
   message: Message<boolean>,
@@ -24,7 +25,7 @@ export const checkForMessage = (
         'OnMessageCreate',
         `${message.author.username} don't have permission to use command : '${commandFile.name}'`
       );
-      return `Bạn không có quyền để sử dụng lệnh ${commandFile.name}`;
+      return messageSend.vi.DonHavePermissionToUseCommand.replace("{command}", commandFile.name);
     }
   }
   if (commandFile.OnlyOwner) {
@@ -33,7 +34,7 @@ export const checkForMessage = (
         'OnMessageCreate',
         `${message.author.username} don't have permission to use command : '${commandFile.name}' for owner`
       );
-      return `Bạn không có quyền để sử dụng lệnh ${commandFile.name}`;
+      return messageSend.vi.DonHavePermissionToUseCommand.replace("{command}", commandFile.name);
     }
   }
   if (commandFile.coolDown) {
