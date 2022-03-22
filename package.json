@@ -1,5 +1,5 @@
 {
-  "name": "bot-discord-v2",
+  "name": "@tritranduc/one-helper-package-for-create-bot",
   "version": "0.0.1",
   "description": "the one package help you create a bot with discord",
   "main": "./src/index.ts",

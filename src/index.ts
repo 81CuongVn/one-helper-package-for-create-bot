@@ -3,9 +3,9 @@ import path from 'path';
 import { CacheType, Client, Interaction, Message } from 'discord.js';
 import { ICommand } from './types/CommandTypes';
 import { Log } from './module/LogClass';
-import { checkPermissions } from './check/permissions';
-import { checkOnlyForOwner } from './check/CheckOnlyForOwner';
 import RPC from 'discord-rpc';
+import { checkForMessage } from './check/CheckForMessage';
+import { checkForInteraction } from './check/CheckForInteraction';
 
 export interface inputType {
   commandDir: string;
@@ -117,33 +117,15 @@ export class Command {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const commandFile: ICommand = require(commandDir).default;
       if (commandFile) {
-        if (commandFile.permission) {
-          const IsHavePermission = checkPermissions(
-            message.member?.permissions,
-            commandFile.permission
-          );
-          if (!IsHavePermission) {
-            message.reply(
-              `Bạn không có quyền để sử dụng lệnh ${commandFile.name}`
-            );
-            this.LogForMessageAndInteractionFunc(
-              'OnMessageCreate',
-              `${message.author.username} don't have permission to use command : '${commandFile.name}'`
-            );
-            return;
-          }
-        }
-        if (commandFile.OnlyOwner) {
-          if (!checkOnlyForOwner(this.owner, message.author.id)) {
-            message.reply(
-              `Bạn không có quyền để sử dụng lệnh ${commandFile.name}`
-            );
-            this.LogForMessageAndInteractionFunc(
-              'OnMessageCreate',
-              `${message.author.username} don't have permission to use command : '${commandFile.name}' for owner`
-            );
-            return;
-          }
+        const Check = checkForMessage(
+          message,
+          commandFile,
+          this.LogForMessageAndInteractionFunc.bind(this),
+          this.owner
+        );
+        if (Check) {
+          message.reply(Check);
+          return;
         }
         const commandResult = await commandFile.callback({
           client: this.client,
@@ -173,33 +155,15 @@ export class Command {
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         const commandFile: ICommand = require(command).default;
         if (commandFile) {
-          if (commandFile.permission) {
-            const isHavePermission = checkPermissions(
-              interaction.memberPermissions,
-              commandFile.permission
-            );
-            if (!isHavePermission) {
-              interaction.reply(
-                `Bạn không có quyền để sử dụng lệnh ${commandFile.name}`
-              );
-              this.LogForMessageAndInteractionFunc(
-                'OnInteractionCreate',
-                `${interaction.member?.user.username} don't have permission to use command : '${commandFile.name}'`
-              );
-              return;
-            }
-          }
-          if (commandFile.OnlyOwner) {
-            if (!checkOnlyForOwner(this.owner, interaction.member?.user.id)) {
-              interaction.reply(
-                `Bạn không có quyền để sử dụng lệnh ${commandFile.name}`
-              );
-              this.LogForMessageAndInteractionFunc(
-                'OnInteractionCreate',
-                `${interaction.member?.user.username} don't have permission to use command : '${commandFile.name}' for owner`
-              );
-              return;
-            }
+          const Check = checkForInteraction(
+            interaction,
+            commandFile,
+            this.LogForMessageAndInteractionFunc.bind(this),
+            this.owner
+          );
+          if (Check) {
+            interaction.editReply(Check);
+            return;
           }
           const commandResult = await commandFile.callback({
             client: this.client,
