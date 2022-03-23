@@ -1,0 +1,2 @@
+the publish command is 
+rm -rf ./dist && npm publish
