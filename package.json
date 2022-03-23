@@ -5,9 +5,13 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "typings": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "nodemon test/index.ts",
-    "build": "rm -rf dist && tsc "
+    "build": "rm -rf dist && tsc ",
+    "prepare": "npm run build"
   },
   "author": "Tritran Duc <tritranduc> (https://github.com/tritranduc)",
   "license": "ISC",
