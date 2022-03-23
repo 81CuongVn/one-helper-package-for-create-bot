@@ -21,12 +21,13 @@ const client = new Client({
 });
 const isDev = process.env.NODE_ENV !== 'production';
 client.on('ready', async () => {
-  new Command(client, {
+  const command = new Command(client, {
     commandDir: path.join(__dirname, './commands'),
     owner: ['889140130105929769'],
     isDev,
     LogForMessageAndInteraction: true,
   });
+  // command.on('SuccessAddEvent', () => {});
   // const inviteLink = client.generateInvite({
   //   scopes: ['applications.commands', 'bot'],
   //   permissions: [Permissions.FLAGS.ADMINISTRATOR],

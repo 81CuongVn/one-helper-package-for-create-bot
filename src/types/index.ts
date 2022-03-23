@@ -11,3 +11,4 @@ export interface inputType {
   BotMessageSend?: IBotMessageSend;
   typescript?: boolean;
 }
+export type PromiseOrType<T> = T | Promise<T>;

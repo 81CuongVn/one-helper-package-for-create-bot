@@ -1,7 +1,13 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import fs from 'fs';
 import path from 'path';
-import { CacheType, Client, Interaction, Message } from 'discord.js';
+import {
+  CacheType,
+  Client,
+  CommandInteraction,
+  Interaction,
+  Message,
+} from 'discord.js';
 import { ICommand } from './types/CommandTypes';
 import { Log } from './module/LogClass';
 import RPC from 'discord-rpc';
@@ -10,9 +16,53 @@ import { checkForInteraction } from './check/CheckForInteraction';
 import { OnMessageCommandDone } from './module/OnMessageCommandDone';
 import { OnInteractionCommandDone } from './module/OnInteractionCommandDone';
 import { messageSend } from './message';
-import { IBotMessageSend, inputType } from './types';
+import { IBotMessageSend, inputType, PromiseOrType } from './types';
+import EventEmitter from 'events';
 
-export class Command {
+interface CommandEvents {
+  startScanDir: () => PromiseOrType<void>;
+  SuccessScanDir: (resultDir: string[]) => PromiseOrType<void>;
+  startScanCommand: () => PromiseOrType<void>;
+  SuccessScanCommand: (
+    slashCommand: ICommand[],
+    allCommand: {
+      [key: string]: string;
+    },
+    allAliases: {
+      [key: string]: string;
+    }
+  ) => PromiseOrType<void>;
+  startAddEvent: () => PromiseOrType<void>;
+  SuccessAddEvent: () => PromiseOrType<void>;
+  startPossessOnMessageCreateEvent: (
+    message: Message<boolean>
+  ) => PromiseOrType<void>;
+  SuccessPossessOnMessageCreateEvent: (
+    message: Message<boolean>
+  ) => PromiseOrType<void>;
+  startPossessOnInteractionCreateEvent: (
+    interaction: CommandInteraction<CacheType>
+  ) => PromiseOrType<void>;
+  SuccessPossessOnInteractionCreateEvent: (
+    interaction: CommandInteraction<CacheType>
+  ) => PromiseOrType<void>;
+  startGetAllCommand: () => PromiseOrType<void>;
+  SuccessGetAllCommand: (allCommand: {
+    [key: string]: ICommand;
+  }) => PromiseOrType<void>;
+  startSetRpc: () => PromiseOrType<void>;
+  SuccessSetRpc: (rpcClient: RPC.Client) => PromiseOrType<void>;
+}
+export declare interface Command extends EventEmitter.EventEmitter {
+  on<U extends keyof CommandEvents>(event: U, listener: CommandEvents[U]): this;
+
+  emit<U extends keyof CommandEvents>(
+    event: U,
+    ...args: Parameters<CommandEvents[U]>
+  ): boolean;
+}
+
+export class Command extends EventEmitter.EventEmitter {
   allCommand: {
     [key: string]: string;
   };
@@ -30,6 +80,7 @@ export class Command {
   BotMessageSend: IBotMessageSend;
   typescript: boolean;
   constructor(client: Client, input: inputType) {
+    super();
     this.allCommand = {};
     this.allAliases = {};
     this.owner = input.owner || [];
@@ -48,6 +99,7 @@ export class Command {
   }
   private scanDir(dir: string) {
     this.LogForThisClass('scanDir', `Scanning ${dir} ...`);
+    this.emit('startScanDir');
     let resultDir: string[] = [];
     const files = fs.readdirSync(dir);
     for (const file of files) {
@@ -64,10 +116,12 @@ export class Command {
       }
     }
     this.LogForThisClass('scanDir', `Scanning ${dir} complete`);
+    this.emit('SuccessScanDir', resultDir);
     return resultDir;
   }
   private scanCommand(commandDir: string[]) {
     this.LogForThisClass('scanCommand', `Scanning command ...`);
+    this.emit('startScanCommand');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const slashCommand: any[] = [];
     for (const command of commandDir) {
@@ -92,10 +146,17 @@ export class Command {
     this.client.guilds.cache.forEach(async (guild) => {
       return guild?.commands.set(slashCommand);
     });
+    this.emit(
+      'SuccessScanCommand',
+      slashCommand,
+      this.allCommand,
+      this.allAliases
+    );
     this.LogForThisClass('scanCommand', `Scanning command complete`);
   }
   private addEvent(client: Client) {
     this.LogForThisClass('addEvent', `Adding event ...`);
+    this.emit('startAddEvent');
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const _this = this;
     client.on('messageCreate', (message) => {
@@ -104,10 +165,12 @@ export class Command {
     client.on('interactionCreate', async (interaction) => {
       _this.OnInteractionCreate(interaction);
     });
+    this.emit('SuccessAddEvent');
     this.LogForThisClass('addEvent', `Adding event complete`);
   }
   private async OnMessageCreate(message: Message<boolean>) {
     const content = message.content;
+    this.emit('startPossessOnMessageCreateEvent', message);
     if (!content.startsWith(this.BotPrefix)) {
       return;
     }
@@ -158,9 +221,11 @@ export class Command {
         );
       }
     }
+    this.emit('SuccessPossessOnMessageCreateEvent', message);
   }
   private async OnInteractionCreate(interaction: Interaction<CacheType>) {
     if (interaction.isCommand()) {
+      this.emit('startPossessOnInteractionCreateEvent', interaction);
       this.LogForMessageAndInteractionFunc(
         'OnInteractionCreate',
         `User ${interaction.member?.user.username} use command : '${interaction.commandName}'...`
@@ -205,10 +270,12 @@ export class Command {
         'OnInteractionCreate',
         `User ${interaction.member?.user.username} use command : '${interaction.commandName}' complete`
       );
+      this.emit('SuccessPossessOnInteractionCreateEvent', interaction);
     }
   }
   public getAllCommand() {
     this.LogForThisClass('getAllCommand', `Getting all command ...`);
+    this.emit('startGetAllCommand');
     const resultCommand: {
       [key: string]: ICommand;
     } = {};
@@ -219,17 +286,19 @@ export class Command {
       resultCommand[commandName] = commandFile;
     }
     this.LogForThisClass('getAllCommand', `Getting all command complete`);
+    this.emit('SuccessGetAllCommand', resultCommand);
     return resultCommand;
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public LogForThisClass(processName: string, ...rest: any) {
+  private LogForThisClass(processName: string, ...rest: any) {
     if (this.isDev) Log.debug(processName, ...rest);
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public LogForMessageAndInteractionFunc(processName: string, ...rest: any) {
+  private LogForMessageAndInteractionFunc(processName: string, ...rest: any) {
     if (this.LogForMessageAndInteraction) Log.debug(processName, ...rest);
   }
   public SetRpc(rpc: RPC.Presence = {}) {
+    this.emit('startSetRpc');
     if (!this.client.application?.id) {
       throw new Error('Bot not have application id');
     }
@@ -250,10 +319,12 @@ export class Command {
         instance: true,
         ...rpc,
       });
+      this.emit('SuccessSetRpc', RpcClient);
     });
     RpcClient.login({
       clientId: this.client.application?.id || '',
     });
+    return this;
   }
 }
 export { Log } from './module/LogClass';

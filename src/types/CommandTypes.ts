@@ -10,11 +10,12 @@ import {
   ApplicationCommandType,
   CommandInteractionOption,
   CommandInteractionOptionResolver,
+  CommandInteraction,
 } from 'discord.js';
 
 export interface InputCallBack {
   client: Client;
-  InteractionOrMessage: Message<boolean> | Interaction<CacheType>;
+  InteractionOrMessage: Message<boolean> |  CommandInteraction<CacheType>;
   getAllCommand: () => {
     [key: string]: ICommand;
   };
