@@ -255,4 +255,5 @@ export class Command {
   }
 }
 export { Log } from './module/LogClass';
-export { ICommand } from './types/CommandTypes';
+export * from './types/CommandTypes';
+export * from './types/';
