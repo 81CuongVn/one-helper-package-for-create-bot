@@ -1,3 +1,3 @@
-# package no name
+# helper-package-create-discord-bot
 ### need to help
 contact me in discord with name is ngủ#8301 (or my user id in discord is 889140130105929769)
