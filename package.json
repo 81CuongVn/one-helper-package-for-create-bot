@@ -1,5 +1,5 @@
 {
-  "name": "helper-package-create-bot",
+  "name": "helper-package-create-discord-bot",
   "version": "0.0.2",
   "description": "the one package help you create a bot with discord",
   "main": "./dist/index.js",

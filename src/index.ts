@@ -69,7 +69,7 @@ export class Command extends EventEmitter.EventEmitter {
   allAliases: {
     [key: string]: string;
   };
-  client: Client<boolean>;
+  private client: Client<boolean>;
   owner: string[];
   isDev: boolean;
   LogForMessageAndInteraction: boolean;
