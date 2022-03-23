@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import fs from 'fs';
 import path from 'path';
 import { CacheType, Client, Interaction, Message } from 'discord.js';
@@ -27,6 +28,7 @@ export class Command {
     [key: string]: number;
   };
   BotMessageSend: IBotMessageSend;
+  typescript: boolean;
   constructor(client: Client, input: inputType) {
     this.allCommand = {};
     this.allAliases = {};
@@ -38,6 +40,7 @@ export class Command {
     this.BotPrefix = input.BotPrefix || '!';
     this.CommandTimeoutCollection = {};
     this.BotMessageSend = input.BotMessageSend || messageSend.vi;
+    this.typescript = input.typescript || true;
     const commandDir = input.commandDir;
     const commandDirList = this.scanDir(commandDir);
     this.scanCommand(commandDirList);
@@ -52,8 +55,11 @@ export class Command {
       const stat = fs.statSync(filePath);
       if (stat.isDirectory()) {
         resultDir = resultDir.concat(this.scanDir(filePath));
-      } else if (filePath.endsWith('.ts')) {
-        const commandName = path.join(dir, file.replace('.ts', ''));
+      } else if (filePath.endsWith(this.typescript ? '.ts' : '.js')) {
+        const commandName = path.join(
+          dir,
+          file.replace(this.typescript ? '.ts' : '.js', '')
+        );
         resultDir.push(commandName);
       }
     }
@@ -65,30 +71,26 @@ export class Command {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const slashCommand: any[] = [];
     for (const command of commandDir) {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const commandFile = require(command).default;
-      const commandName = commandFile.name;
-      this.allCommand[commandName] = command;
-      if (commandFile.aliases && Array.isArray(commandFile.aliases)) {
-        commandFile.aliases.map((alias: string) => {
-          this.allAliases[alias] = commandName;
-        });
-      }
-      if (commandFile.isSlash) {
-        slashCommand.push(commandFile);
+      const commandFile = require(command).default
+        ? require(command).default
+        : require(command);
+      if (commandFile) {
+        const commandName = commandFile.name;
+        this.allCommand[commandName] = command;
+        if (commandFile.aliases && Array.isArray(commandFile.aliases)) {
+          commandFile.aliases.map((alias: string) => {
+            this.allAliases[alias] = commandName;
+          });
+        }
+        if (commandFile.isSlash) {
+          slashCommand.push(commandFile);
+        }
+      } else {
+        this.LogForThisClass(`${command} is not a valid command`);
       }
     }
-    this.client.guilds.cache.map(async (guild) => {
-      const guildId = guild.id;
-      if (!guildId) return;
-      if (guildId) {
-        if (slashCommand) {
-          await this.client.guilds.cache.get(guildId)?.commands.set([]);
-          await this.client.guilds.cache
-            .get(guildId)
-            ?.commands.set(slashCommand);
-        }
-      }
+    this.client.guilds.cache.forEach(async (guild) => {
+      return guild?.commands.set(slashCommand);
     });
     this.LogForThisClass('scanCommand', `Scanning command complete`);
   }

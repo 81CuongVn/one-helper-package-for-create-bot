@@ -9,4 +9,5 @@ export interface inputType {
   LogForMessageAndInteraction?: boolean;
   BotPrefix?: string;
   BotMessageSend?: IBotMessageSend;
+  typescript?: boolean;
 }

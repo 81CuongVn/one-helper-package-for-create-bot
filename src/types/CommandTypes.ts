@@ -40,7 +40,11 @@ export interface ICommand extends ISlashCommandHandlers {
   isSlash?: boolean;
   callback: (
     input: InputCallBack
-  ) => Promise<string | MessagePayload | ReplyMessageOptions>;
+  ) =>
+    | Promise<string | MessagePayload | ReplyMessageOptions>
+    | string
+    | MessagePayload
+    | ReplyMessageOptions;
   aliases?: string[];
   permission?: PermissionResolvable[];
   coolDown?: number;
