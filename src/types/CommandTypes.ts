@@ -11,14 +11,16 @@ import {
   CommandInteractionOptionResolver,
   CommandInteraction,
 } from 'discord.js';
+import { Command } from '../';
 
 interface BaseInputCallBack {
   sessionId?: string;
-  isInteraction?:  boolean;
+  isInteraction?: boolean;
   getAllCommand: () => {
     [key: string]: ICommand;
   };
   client: Client;
+  CommandObject: Command;
 }
 interface InputCallBackForInteraction extends BaseInputCallBack {
   Interaction?: CommandInteraction<CacheType>;

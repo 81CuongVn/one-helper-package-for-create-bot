@@ -179,7 +179,7 @@ export class Command extends EventEmitter.EventEmitter {
     this.LogForThisClass('addEvent', `Adding event complete`);
   }
   private async OnMessageCreate(message: Message<boolean>) {
-    const thisSessionId = this.generationUUid();
+    const thisSessionId = Command.generationUUid();
     const content = message.content;
     this.emit('startPossessOnMessageCreateEvent', message, thisSessionId);
     if (!content.startsWith(this.BotPrefix)) {
@@ -219,6 +219,7 @@ export class Command extends EventEmitter.EventEmitter {
           args: command,
           sessionId: thisSessionId,
           isInteraction: false,
+          CommandObject: this,
         });
         if (commandResult) {
           const messageAfterSend = await message.reply(commandResult);
@@ -246,7 +247,7 @@ export class Command extends EventEmitter.EventEmitter {
   }
   private async OnInteractionCreate(interaction: Interaction<CacheType>) {
     if (interaction.isCommand()) {
-      const thisSessionId = this.generationUUid();
+      const thisSessionId = Command.generationUUid();
       this.emit(
         'startPossessOnInteractionCreateEvent',
         interaction,
@@ -282,6 +283,7 @@ export class Command extends EventEmitter.EventEmitter {
             RawOption: interaction.options.data,
             option: interaction.options,
             sessionId: thisSessionId,
+            CommandObject: this,
           });
           if (commandResult) {
             const InteractionSend = await interaction.editReply(commandResult);
@@ -358,7 +360,7 @@ export class Command extends EventEmitter.EventEmitter {
     });
     return this;
   }
-  public generationUUid() {
+  static generationUUid() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
       /[xy]/g,
       function (c) {
