@@ -14,11 +14,12 @@ export default {
   options: [],
   OnlyOwner: true,
 
-  callback: async ({ client }) => {
+  callback: async ({ client ,isInteraction}) => {
     // console.log(getAllCommand())
     // if (InteractionOrMessage instanceof Message) {
     //   console.log(InteractionOrMessage.author.username);
     // }
+    
     return `Pong! ${client.ws.ping}ms`;
   },
 } as ICommand;

@@ -18,6 +18,7 @@ import { OnInteractionCommandDone } from './module/OnInteractionCommandDone';
 import { messageSend } from './message';
 import { IBotMessageSend, inputType, PromiseOrType } from './types';
 import EventEmitter from 'events';
+import { APIMessage } from 'discord-api-types';
 
 interface CommandEvents {
   startScanDir: () => PromiseOrType<void>;
@@ -35,16 +36,25 @@ interface CommandEvents {
   startAddEvent: () => PromiseOrType<void>;
   SuccessAddEvent: () => PromiseOrType<void>;
   startPossessOnMessageCreateEvent: (
-    message: Message<boolean>
+    message: Message<boolean>,
+    sessionId: string
   ) => PromiseOrType<void>;
   SuccessPossessOnMessageCreateEvent: (
-    message: Message<boolean>
+    message: Message<boolean>,
+    messageAfterSend: Message<boolean>,
+    commandName: string,
+    commandFile: ICommand,
+    sessionId: string
   ) => PromiseOrType<void>;
   startPossessOnInteractionCreateEvent: (
-    interaction: CommandInteraction<CacheType>
+    interaction: CommandInteraction<CacheType>,
+
+    sessionId: string
   ) => PromiseOrType<void>;
   SuccessPossessOnInteractionCreateEvent: (
-    interaction: CommandInteraction<CacheType>
+    interaction: CommandInteraction<CacheType>,
+    sessionId: string,
+    InteractionSend: APIMessage | Message<boolean>
   ) => PromiseOrType<void>;
   startGetAllCommand: () => PromiseOrType<void>;
   SuccessGetAllCommand: (allCommand: {
@@ -169,8 +179,9 @@ export class Command extends EventEmitter.EventEmitter {
     this.LogForThisClass('addEvent', `Adding event complete`);
   }
   private async OnMessageCreate(message: Message<boolean>) {
+    const thisSessionId = this.generationUUid();
     const content = message.content;
-    this.emit('startPossessOnMessageCreateEvent', message);
+    this.emit('startPossessOnMessageCreateEvent', message, thisSessionId);
     if (!content.startsWith(this.BotPrefix)) {
       return;
     }
@@ -203,29 +214,44 @@ export class Command extends EventEmitter.EventEmitter {
         }
         const commandResult = await commandFile.callback({
           client: this.client,
-          InteractionOrMessage: message,
+          Message: message,
           getAllCommand: this.getAllCommand.bind(this),
           args: command,
+          sessionId: thisSessionId,
+          isInteraction: false,
         });
         if (commandResult) {
-          await message.reply(commandResult);
+          const messageAfterSend = await message.reply(commandResult);
+          this.emit(
+            'SuccessPossessOnMessageCreateEvent',
+            message,
+            messageAfterSend,
+            commandName,
+            commandFile,
+            thisSessionId
+          );
         }
         OnMessageCommandDone(
           this.CommandTimeoutCollection,
           commandFile,
           message
         );
+
         this.LogForMessageAndInteractionFunc(
           'OnMessageCreate',
           `${message.author.username} send command : '${commandName}' , All content send : '${content}' complete`
         );
       }
     }
-    this.emit('SuccessPossessOnMessageCreateEvent', message);
   }
   private async OnInteractionCreate(interaction: Interaction<CacheType>) {
     if (interaction.isCommand()) {
-      this.emit('startPossessOnInteractionCreateEvent', interaction);
+      const thisSessionId = this.generationUUid();
+      this.emit(
+        'startPossessOnInteractionCreateEvent',
+        interaction,
+        thisSessionId
+      );
       this.LogForMessageAndInteractionFunc(
         'OnInteractionCreate',
         `User ${interaction.member?.user.username} use command : '${interaction.commandName}'...`
@@ -250,14 +276,21 @@ export class Command extends EventEmitter.EventEmitter {
           }
           const commandResult = await commandFile.callback({
             client: this.client,
-            InteractionOrMessage: interaction,
+            Interaction: interaction,
             getAllCommand: this.getAllCommand.bind(this),
             isInteraction: true,
             RawOption: interaction.options.data,
             option: interaction.options,
+            sessionId: thisSessionId,
           });
           if (commandResult) {
-            interaction.editReply(commandResult);
+            const InteractionSend = await interaction.editReply(commandResult);
+            this.emit(
+              'SuccessPossessOnInteractionCreateEvent',
+              interaction,
+              thisSessionId,
+              InteractionSend
+            );
           }
           OnInteractionCommandDone(
             this.CommandTimeoutCollection,
@@ -270,7 +303,6 @@ export class Command extends EventEmitter.EventEmitter {
         'OnInteractionCreate',
         `User ${interaction.member?.user.username} use command : '${interaction.commandName}' complete`
       );
-      this.emit('SuccessPossessOnInteractionCreateEvent', interaction);
     }
   }
   public getAllCommand() {
@@ -325,6 +357,24 @@ export class Command extends EventEmitter.EventEmitter {
       clientId: this.client.application?.id || '',
     });
     return this;
+  }
+  public generationUUid() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
+      /[xy]/g,
+      function (c) {
+        const r = (Math.random() * 16) | 0,
+          v = c == 'x' ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      }
+    );
+  }
+  public getCommandWithName(commandName: string) {
+    const commandDir = this.allCommand[commandName];
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const commandFile = require(commandDir).default;
+    return {
+      [commandName]: commandFile,
+    };
   }
 }
 export { Log } from './module/LogClass';

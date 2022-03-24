@@ -3,7 +3,6 @@ import {
   MessagePayload,
   ReplyMessageOptions,
   CacheType,
-  Interaction,
   Message,
   PermissionResolvable,
   ApplicationCommandOptionData,
@@ -13,20 +12,29 @@ import {
   CommandInteraction,
 } from 'discord.js';
 
-export interface InputCallBack {
-  client: Client;
-  InteractionOrMessage: Message<boolean> |  CommandInteraction<CacheType>;
+interface BaseInputCallBack {
+  sessionId?: string;
+  isInteraction?:  boolean;
   getAllCommand: () => {
     [key: string]: ICommand;
   };
-  isInteraction?: boolean;
+  client: Client;
+}
+interface InputCallBackForInteraction extends BaseInputCallBack {
+  Interaction?: CommandInteraction<CacheType>;
   RawOption?: readonly CommandInteractionOption<CacheType>[];
   option?: Omit<
     CommandInteractionOptionResolver<CacheType>,
     'getMessage' | 'getFocused'
   >;
-  args?: string[];
 }
+interface InputCallBackForMessage extends BaseInputCallBack {
+  args?: string[];
+  Message?: Message<boolean>;
+}
+export type InputCallBack = InputCallBackForInteraction &
+  InputCallBackForMessage;
+
 // ApplicationCommandDataResolvable
 export interface ISlashCommandHandlers {
   type?: ApplicationCommandType;
