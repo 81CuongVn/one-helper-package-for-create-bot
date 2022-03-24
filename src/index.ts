@@ -35,27 +35,27 @@ interface CommandEvents {
   ) => PromiseOrType<void>;
   startAddEvent: () => PromiseOrType<void>;
   SuccessAddEvent: () => PromiseOrType<void>;
-  startPossessOnMessageCreateEvent: (
-    message: Message<boolean>,
-    sessionId: string
-  ) => PromiseOrType<void>;
-  SuccessPossessOnMessageCreateEvent: (
-    message: Message<boolean>,
-    messageAfterSend: Message<boolean>,
-    commandName: string,
-    commandFile: ICommand,
-    sessionId: string
-  ) => PromiseOrType<void>;
-  startPossessOnInteractionCreateEvent: (
-    interaction: CommandInteraction<CacheType>,
+  startPossessOnMessageCreateEvent: (input: {
+    message: Message<boolean>;
+    sessionId: string;
+  }) => PromiseOrType<void>;
+  SuccessPossessOnMessageCreateEvent: (input: {
+    message: Message<boolean>;
+    messageAfterSend: Message<boolean>;
+    commandName: string;
+    commandFile: ICommand;
+    sessionId: string;
+  }) => PromiseOrType<void>;
+  startPossessOnInteractionCreateEvent: (input: {
+    interaction: CommandInteraction<CacheType>;
 
-    sessionId: string
-  ) => PromiseOrType<void>;
-  SuccessPossessOnInteractionCreateEvent: (
-    interaction: CommandInteraction<CacheType>,
-    sessionId: string,
-    InteractionSend: APIMessage | Message<boolean>
-  ) => PromiseOrType<void>;
+    sessionId: string;
+  }) => PromiseOrType<void>;
+  SuccessPossessOnInteractionCreateEvent: (input: {
+    interaction: CommandInteraction<CacheType>;
+    sessionId: string;
+    InteractionSend: APIMessage | Message<boolean>;
+  }) => PromiseOrType<void>;
   startGetAllCommand: () => PromiseOrType<void>;
   SuccessGetAllCommand: (allCommand: {
     [key: string]: ICommand;
@@ -181,7 +181,10 @@ export class Command extends EventEmitter.EventEmitter {
   private async OnMessageCreate(message: Message<boolean>) {
     const thisSessionId = Command.generationUUid();
     const content = message.content;
-    this.emit('startPossessOnMessageCreateEvent', message, thisSessionId);
+    this.emit('startPossessOnMessageCreateEvent', {
+      message,
+      sessionId: thisSessionId,
+    });
     if (!content.startsWith(this.BotPrefix)) {
       return;
     }
@@ -223,20 +226,19 @@ export class Command extends EventEmitter.EventEmitter {
         });
         if (commandResult) {
           const messageAfterSend = await message.reply(commandResult);
-          this.emit(
-            'SuccessPossessOnMessageCreateEvent',
+          this.emit('SuccessPossessOnMessageCreateEvent', {
             message,
             messageAfterSend,
             commandName,
             commandFile,
-            thisSessionId
+            sessionId: thisSessionId,
+          });
+          OnMessageCommandDone(
+            this.CommandTimeoutCollection,
+            commandFile,
+            message
           );
         }
-        OnMessageCommandDone(
-          this.CommandTimeoutCollection,
-          commandFile,
-          message
-        );
 
         this.LogForMessageAndInteractionFunc(
           'OnMessageCreate',
@@ -248,11 +250,10 @@ export class Command extends EventEmitter.EventEmitter {
   private async OnInteractionCreate(interaction: Interaction<CacheType>) {
     if (interaction.isCommand()) {
       const thisSessionId = Command.generationUUid();
-      this.emit(
-        'startPossessOnInteractionCreateEvent',
+      this.emit('startPossessOnInteractionCreateEvent', {
         interaction,
-        thisSessionId
-      );
+        sessionId: thisSessionId,
+      });
       this.LogForMessageAndInteractionFunc(
         'OnInteractionCreate',
         `User ${interaction.member?.user.username} use command : '${interaction.commandName}'...`
@@ -287,12 +288,11 @@ export class Command extends EventEmitter.EventEmitter {
           });
           if (commandResult) {
             const InteractionSend = await interaction.editReply(commandResult);
-            this.emit(
-              'SuccessPossessOnInteractionCreateEvent',
+            this.emit('SuccessPossessOnInteractionCreateEvent', {
               interaction,
-              thisSessionId,
-              InteractionSend
-            );
+              sessionId: thisSessionId,
+              InteractionSend,
+            });
           }
           OnInteractionCommandDone(
             this.CommandTimeoutCollection,

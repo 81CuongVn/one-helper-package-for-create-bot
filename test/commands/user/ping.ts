@@ -14,12 +14,22 @@ export default {
   options: [],
   OnlyOwner: true,
 
-  callback: async ({ client ,isInteraction}) => {
+  callback: async ({ client, CommandObject, sessionId: CommandSessionId }) => {
     // console.log(getAllCommand())
     // if (InteractionOrMessage instanceof Message) {
     //   console.log(InteractionOrMessage.author.username);
     // }
-    
+    CommandObject.on(
+      'SuccessPossessOnMessageCreateEvent',
+      ({ messageAfterSend: messageSend, sessionId }) => {
+        if (sessionId === CommandSessionId) {
+          messageSend.react('🇵');
+          messageSend.react('🇴');
+          messageSend.react('🇳');
+          messageSend.react('🇬');
+        }
+      }
+    );
     return `Pong! ${client.ws.ping}ms`;
   },
 } as ICommand;
