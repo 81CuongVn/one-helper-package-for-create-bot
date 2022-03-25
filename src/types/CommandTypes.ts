@@ -11,11 +11,12 @@ import {
   CommandInteractionOptionResolver,
   CommandInteraction,
 } from 'discord.js';
+import { PromiseOrType } from '.';
 import { Command } from '../';
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 interface BaseInputCallBack<MetaDataType> {
-  sessionId?: string;
+  sessionId: string;
   isInteraction?: boolean;
   getAllCommand: () => {
     [key: string]: ICommand<MetaDataType>;
@@ -55,11 +56,9 @@ export interface ICommand<MetaData> extends ISlashCommandHandlers {
   isSlash?: boolean;
   callback: (
     input: InputCallBack<MetaData>
-  ) =>
-    | Promise<string | MessagePayload | ReplyMessageOptions>
-    | string
-    | MessagePayload
-    | ReplyMessageOptions;
+  ) => PromiseOrType<
+    string | MessagePayload | ReplyMessageOptions | null | undefined | void
+  >;
   aliases?: string[];
   permission?: PermissionResolvable[];
   coolDown?: number;

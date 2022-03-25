@@ -235,6 +235,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
           message.reply(Check);
           return;
         }
+
         const commandResult = await commandFile.callback({
           client: this.client,
           Message: message,
@@ -307,6 +308,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
             interaction.editReply(Check);
             return;
           }
+
           const commandResult = await commandFile.callback({
             client: this.client,
             Interaction: interaction,
