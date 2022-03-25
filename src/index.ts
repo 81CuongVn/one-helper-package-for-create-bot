@@ -39,6 +39,7 @@ interface CommandEvents<MetaDataType> {
   startPossessOnMessageCreateEvent: (input: {
     message: Message<boolean>;
     sessionId: string;
+    SetIsReplyMessage: (data: boolean) => void;
   }) => PromiseOrType<void>;
   SuccessPossessOnMessageCreateEvent: (input: {
     message: Message<boolean>;
@@ -49,8 +50,8 @@ interface CommandEvents<MetaDataType> {
     MetaData: MetaDataType;
   }) => PromiseOrType<void>;
   startPossessOnInteractionCreateEvent: (input: {
+    SetIsReplyMessage: (data: boolean) => void;
     interaction: CommandInteraction<CacheType>;
-
     sessionId: string;
   }) => PromiseOrType<void>;
   SuccessPossessOnInteractionCreateEvent: (input: {
@@ -191,24 +192,33 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
   private async OnMessageCreate(message: Message<boolean>) {
     const thisSessionId = Command.generationUUid();
     const content = message.content;
-    this.emit('startPossessOnMessageCreateEvent', {
-      message,
-      sessionId: thisSessionId,
-    });
+
     if (!content.startsWith(this.BotPrefix)) {
       return;
     }
     const command = content.toLowerCase().slice(1).split(' ');
     const commandName = command.shift()?.toLowerCase();
     if (!commandName) return;
+    let IsReplyMessage = true;
+    const SetIsReplyMessage = (data: boolean) => {
+      IsReplyMessage = data;
+    };
     const commandDir =
       this.allCommand[commandName] ||
       this.allCommand[this.allAliases[commandName]];
     if (commandDir) {
+      this.emit('startPossessOnMessageCreateEvent', {
+        message,
+        sessionId: thisSessionId,
+        SetIsReplyMessage,
+      });
       this.LogForMessageAndInteractionFunc(
         'OnMessageCreate',
         `${message.author.username} send command : '${commandName}' , All content send '${content}' ...`
       );
+      if (!IsReplyMessage) {
+        return;
+      }
       message.channel.sendTyping();
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const commandFile: ICommand<MetaDataType> = require(commandDir).default;
@@ -262,20 +272,29 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
   private async OnInteractionCreate(interaction: Interaction<CacheType>) {
     if (interaction.isCommand()) {
       const thisSessionId = Command.generationUUid();
-      this.emit('startPossessOnInteractionCreateEvent', {
-        interaction,
-        sessionId: thisSessionId,
-      });
+
       this.LogForMessageAndInteractionFunc(
         'OnInteractionCreate',
         `User ${interaction.member?.user.username} use command : '${interaction.commandName}'...`
       );
       const command = this.allCommand[interaction.commandName];
+      let IsReplyMessage = true;
+      const SetIsReplyMessage = (data: boolean) => {
+        IsReplyMessage = data;
+      };
       if (command) {
         await interaction.deferReply();
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         const commandFile: ICommand<MetaDataType> = require(command).default;
         if (commandFile) {
+          this.emit('startPossessOnInteractionCreateEvent', {
+            interaction,
+            sessionId: thisSessionId,
+            SetIsReplyMessage,
+          });
+          if (!IsReplyMessage) {
+            return;
+          }
           const Check = checkForInteraction(
             interaction,
             commandFile,

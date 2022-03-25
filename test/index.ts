@@ -31,6 +31,13 @@ client.on('ready', async () => {
       a: 1,
     },
   });
+  // command.on(
+  //   'startPossessOnMessageCreateEvent',
+  //   ({ SetIsReplyMessage, message }) => {
+  //     message.reply("I'm here!");
+  //     SetIsReplyMessage(false);
+  //   }
+  // );
   // command.on('SuccessAddEvent', () => {});
   // const inviteLink = client.generateInvite({
   //   scopes: ['applications.commands', 'bot'],
