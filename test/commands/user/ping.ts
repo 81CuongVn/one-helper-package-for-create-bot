@@ -1,5 +1,6 @@
 import moment from 'moment';
 import { ICommand } from '../../../src/';
+import { MetaData } from '../../types/MetaDataType';
 
 export default {
   category: 'user',
@@ -14,22 +15,29 @@ export default {
   options: [],
   OnlyOwner: true,
 
-  callback: async ({ client, CommandObject, sessionId: CommandSessionId }) => {
+  callback: async ({
+    client,
+    CommandObject,
+    sessionId: CommandSessionId,
+    MetaData,
+  }) => {
     // console.log(getAllCommand())
     // if (InteractionOrMessage instanceof Message) {
     //   console.log(InteractionOrMessage.author.username);
     // }
     CommandObject.on(
       'SuccessPossessOnMessageCreateEvent',
-      ({ messageAfterSend: messageSend, sessionId }) => {
+      ({ messageAfterSend: messageSend, sessionId , MetaData}) => {
         if (sessionId === CommandSessionId) {
           messageSend.react('🇵');
           messageSend.react('🇴');
           messageSend.react('🇳');
           messageSend.react('🇬');
+          console.log(MetaData.a);
         }
       }
     );
+    console.log(MetaData.a);
     return `Pong! ${client.ws.ping}ms`;
   },
-} as ICommand;
+} as ICommand<MetaData>;

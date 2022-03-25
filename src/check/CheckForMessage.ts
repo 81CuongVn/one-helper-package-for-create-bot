@@ -5,9 +5,9 @@ import { checkOnlyForOwner } from './CheckOnlyForOwner';
 import { checkCommandTimeOut } from './CheckCommandTimeOut';
 import { IBotMessageSend } from '../types';
 
-export const checkForMessage = (
+export const checkForMessage = <Metadata>(
   message: Message<boolean>,
-  commandFile: ICommand,
+  commandFile: ICommand<Metadata>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   logFunc: (processName: string, ...rest: any) => void,
   owner: string[],

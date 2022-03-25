@@ -2,7 +2,7 @@ export interface IBotMessageSend {
   commandCoolDown: string;
   DonHavePermissionToUseCommand: string;
 }
-export interface inputType {
+export interface inputType<MetaDataType> {
   commandDir: string;
   isDev?: boolean;
   owner?: string[];
@@ -10,5 +10,6 @@ export interface inputType {
   BotPrefix?: string;
   BotMessageSend?: IBotMessageSend;
   typescript?: boolean;
+  metaData: MetaDataType;
 }
 export type PromiseOrType<T> = T | Promise<T>;

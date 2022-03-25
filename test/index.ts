@@ -7,6 +7,7 @@ dotenv.config({
 });
 import { allIntents } from './constants';
 import { Command } from '../src/index';
+import { MetaData } from './types/MetaDataType';
 
 const client = new Client({
   intents: allIntents,
@@ -21,11 +22,14 @@ const client = new Client({
 });
 const isDev = process.env.NODE_ENV !== 'production';
 client.on('ready', async () => {
-  const command = new Command(client, {
+  const command = new Command<MetaData>(client, {
     commandDir: path.join(__dirname, './commands'),
     owner: ['889140130105929769'],
     isDev,
     LogForMessageAndInteraction: true,
+    metaData: {
+      a: 1,
+    },
   });
   // command.on('SuccessAddEvent', () => {});
   // const inviteLink = client.generateInvite({

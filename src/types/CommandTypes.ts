@@ -13,16 +13,19 @@ import {
 } from 'discord.js';
 import { Command } from '../';
 
-interface BaseInputCallBack {
+// eslint-disable-next-line @typescript-eslint/ban-types
+interface BaseInputCallBack<MetaDataType> {
   sessionId?: string;
   isInteraction?: boolean;
   getAllCommand: () => {
-    [key: string]: ICommand;
+    [key: string]: ICommand<MetaDataType>;
   };
   client: Client;
-  CommandObject: Command;
+  CommandObject: Command<MetaDataType>;
+  MetaData: MetaDataType;
 }
-interface InputCallBackForInteraction extends BaseInputCallBack {
+interface InputCallBackForInteraction<MetaData>
+  extends BaseInputCallBack<MetaData> {
   Interaction?: CommandInteraction<CacheType>;
   RawOption?: readonly CommandInteractionOption<CacheType>[];
   option?: Omit<
@@ -30,12 +33,13 @@ interface InputCallBackForInteraction extends BaseInputCallBack {
     'getMessage' | 'getFocused'
   >;
 }
-interface InputCallBackForMessage extends BaseInputCallBack {
+interface InputCallBackForMessage<MetaData>
+  extends BaseInputCallBack<MetaData> {
   args?: string[];
   Message?: Message<boolean>;
 }
-export type InputCallBack = InputCallBackForInteraction &
-  InputCallBackForMessage;
+export type InputCallBack<MetaData> = InputCallBackForInteraction<MetaData> &
+  InputCallBackForMessage<MetaData>;
 
 // ApplicationCommandDataResolvable
 export interface ISlashCommandHandlers {
@@ -44,13 +48,13 @@ export interface ISlashCommandHandlers {
   options?: Array<ApplicationCommandOptionData>;
 }
 
-export interface ICommand extends ISlashCommandHandlers {
+export interface ICommand<MetaData> extends ISlashCommandHandlers {
   name: string;
   description?: string;
   category?: string;
   isSlash?: boolean;
   callback: (
-    input: InputCallBack
+    input: InputCallBack<MetaData>
   ) =>
     | Promise<string | MessagePayload | ReplyMessageOptions>
     | string

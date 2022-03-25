@@ -5,16 +5,16 @@ import { checkOnlyForOwner } from './CheckOnlyForOwner';
 import { checkCommandTimeOut } from './CheckCommandTimeOut';
 import { IBotMessageSend } from './../types/index';
 
-export const checkForInteraction = (
+export const checkForInteraction = <MetaData>(
   interaction: Interaction<CacheType>,
-  commandFile: ICommand,
+  commandFile: ICommand<MetaData>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   logFunc: (processName: string, ...rest: any) => void,
   owner: string[],
   Timeout: {
     [key: string]: number;
   },
-  BotMessageSend : IBotMessageSend
+  BotMessageSend: IBotMessageSend
 ) => {
   if (commandFile.permission) {
     const IsHavePermission = checkPermissions(

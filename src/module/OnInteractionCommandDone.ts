@@ -1,11 +1,11 @@
 import { Interaction, CacheType } from 'discord.js';
 import { ICommand } from 'src/types/CommandTypes';
 
-export const OnInteractionCommandDone = (
+export const OnInteractionCommandDone = <MetaData>(
   Timeout: {
     [key: string]: number;
   },
-  commandFile: ICommand,
+  commandFile: ICommand<MetaData>,
   Interaction: Interaction<CacheType>,
 ) => {
   if (commandFile.coolDown) {

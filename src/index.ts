@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-var-requires */
 import fs from 'fs';
 import path from 'path';
@@ -20,12 +21,12 @@ import { IBotMessageSend, inputType, PromiseOrType } from './types';
 import EventEmitter from 'events';
 import { APIMessage } from 'discord-api-types';
 
-interface CommandEvents {
+interface CommandEvents<MetaDataType> {
   startScanDir: () => PromiseOrType<void>;
   SuccessScanDir: (resultDir: string[]) => PromiseOrType<void>;
   startScanCommand: () => PromiseOrType<void>;
   SuccessScanCommand: (
-    slashCommand: ICommand[],
+    slashCommand: ICommand<MetaDataType>[],
     allCommand: {
       [key: string]: string;
     },
@@ -43,8 +44,9 @@ interface CommandEvents {
     message: Message<boolean>;
     messageAfterSend: Message<boolean>;
     commandName: string;
-    commandFile: ICommand;
+    commandFile: ICommand<MetaDataType>;
     sessionId: string;
+    MetaData: MetaDataType;
   }) => PromiseOrType<void>;
   startPossessOnInteractionCreateEvent: (input: {
     interaction: CommandInteraction<CacheType>;
@@ -55,24 +57,29 @@ interface CommandEvents {
     interaction: CommandInteraction<CacheType>;
     sessionId: string;
     InteractionSend: APIMessage | Message<boolean>;
+    MetaData: MetaDataType;
   }) => PromiseOrType<void>;
   startGetAllCommand: () => PromiseOrType<void>;
   SuccessGetAllCommand: (allCommand: {
-    [key: string]: ICommand;
+    [key: string]: ICommand<MetaDataType>;
   }) => PromiseOrType<void>;
   startSetRpc: () => PromiseOrType<void>;
   SuccessSetRpc: (rpcClient: RPC.Client) => PromiseOrType<void>;
 }
-export declare interface Command extends EventEmitter.EventEmitter {
-  on<U extends keyof CommandEvents>(event: U, listener: CommandEvents[U]): this;
-
-  emit<U extends keyof CommandEvents>(
+export declare interface Command<MetaDataType>
+  extends EventEmitter.EventEmitter {
+  on<U extends keyof CommandEvents<MetaDataType>>(
     event: U,
-    ...args: Parameters<CommandEvents[U]>
+    listener: CommandEvents<MetaDataType>[U]
+  ): this;
+
+  emit<U extends keyof CommandEvents<MetaDataType>>(
+    event: U,
+    ...args: Parameters<CommandEvents<MetaDataType>[U]>
   ): boolean;
 }
 
-export class Command extends EventEmitter.EventEmitter {
+export class Command<MetaDataType> extends EventEmitter.EventEmitter {
   allCommand: {
     [key: string]: string;
   };
@@ -87,9 +94,11 @@ export class Command extends EventEmitter.EventEmitter {
   CommandTimeoutCollection: {
     [key: string]: number;
   };
-  BotMessageSend: IBotMessageSend;
+  private BotMessageSend: IBotMessageSend;
   typescript: boolean;
-  constructor(client: Client, input: inputType) {
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  MetaData: MetaDataType;
+  constructor(client: Client, input: inputType<MetaDataType>) {
     super();
     this.allCommand = {};
     this.allAliases = {};
@@ -103,6 +112,7 @@ export class Command extends EventEmitter.EventEmitter {
     this.BotMessageSend = input.BotMessageSend || messageSend.vi;
     this.typescript = input.typescript || true;
     const commandDir = input.commandDir;
+    this.MetaData = input.metaData;
     const commandDirList = this.scanDir(commandDir);
     this.scanCommand(commandDirList);
     this.addEvent(client);
@@ -201,7 +211,7 @@ export class Command extends EventEmitter.EventEmitter {
       );
       message.channel.sendTyping();
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const commandFile: ICommand = require(commandDir).default;
+      const commandFile: ICommand<MetaDataType> = require(commandDir).default;
       if (commandFile) {
         const Check = checkForMessage(
           message,
@@ -223,6 +233,7 @@ export class Command extends EventEmitter.EventEmitter {
           sessionId: thisSessionId,
           isInteraction: false,
           CommandObject: this,
+          MetaData: this.MetaData,
         });
         if (commandResult) {
           const messageAfterSend = await message.reply(commandResult);
@@ -232,6 +243,7 @@ export class Command extends EventEmitter.EventEmitter {
             commandName,
             commandFile,
             sessionId: thisSessionId,
+            MetaData: this.MetaData,
           });
           OnMessageCommandDone(
             this.CommandTimeoutCollection,
@@ -262,7 +274,7 @@ export class Command extends EventEmitter.EventEmitter {
       if (command) {
         await interaction.deferReply();
         // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const commandFile: ICommand = require(command).default;
+        const commandFile: ICommand<MetaDataType> = require(command).default;
         if (commandFile) {
           const Check = checkForInteraction(
             interaction,
@@ -285,6 +297,7 @@ export class Command extends EventEmitter.EventEmitter {
             option: interaction.options,
             sessionId: thisSessionId,
             CommandObject: this,
+            MetaData: this.MetaData,
           });
           if (commandResult) {
             const InteractionSend = await interaction.editReply(commandResult);
@@ -292,6 +305,7 @@ export class Command extends EventEmitter.EventEmitter {
               interaction,
               sessionId: thisSessionId,
               InteractionSend,
+              MetaData: this.MetaData,
             });
           }
           OnInteractionCommandDone(
@@ -311,7 +325,7 @@ export class Command extends EventEmitter.EventEmitter {
     this.LogForThisClass('getAllCommand', `Getting all command ...`);
     this.emit('startGetAllCommand');
     const resultCommand: {
-      [key: string]: ICommand;
+      [key: string]: ICommand<MetaDataType>;
     } = {};
     for (const commandName of Object.keys(this.allCommand)) {
       const commandDir = this.allCommand[commandName];
