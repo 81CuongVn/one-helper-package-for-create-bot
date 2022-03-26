@@ -1,6 +1,6 @@
 # **document**
 
-## **need to help**
+## **requirements**
 
 - discord.js
 - node.js(16.x)
