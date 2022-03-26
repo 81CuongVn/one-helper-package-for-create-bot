@@ -15,8 +15,8 @@ document [link to document click to go](./document/main.md)
 - [x] proses the slash command
 - [x] check permission to use command
 - [x] have the command time out(command cooldown)
-- [ ] proses the message button
-- [ ] proses the message menu
+- [ ] proses the message button (todo)
+- [ ] proses the message menu (todo)
 
 ## **Links**
 
