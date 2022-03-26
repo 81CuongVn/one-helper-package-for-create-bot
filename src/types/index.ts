@@ -11,5 +11,8 @@ export interface inputType<MetaDataType> {
   BotMessageSend?: IBotMessageSend;
   typescript?: boolean;
   metaData: MetaDataType;
+  CustomPrefix?: {
+    [guidId: string]: string;
+  };
 }
 export type PromiseOrType<T> = T | Promise<T>;

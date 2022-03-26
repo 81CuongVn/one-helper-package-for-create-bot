@@ -99,6 +99,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
   typescript: boolean;
   // eslint-disable-next-line @typescript-eslint/ban-types
   MetaData: MetaDataType;
+  CustomPrefix: { [guidId: string]: string; };
   constructor(client: Client, input: inputType<MetaDataType>) {
     super();
     this.allCommand = {};
@@ -112,11 +113,13 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
     this.CommandTimeoutCollection = {};
     this.BotMessageSend = input.BotMessageSend || messageSend.vi;
     this.typescript = input.typescript || true;
-    const commandDir = input.commandDir;
     this.MetaData = input.metaData;
-    const commandDirList = this.scanDir(commandDir);
+    this.CustomPrefix = input.CustomPrefix || {};
+    const commandDir = input.commandDir;
+    let commandDirList: string[] | null | undefined = this.scanDir(commandDir);
     this.scanCommand(commandDirList);
     this.addEvent(client);
+    commandDirList = null;
   }
   private scanDir(dir: string) {
     this.LogForThisClass('scanDir', `Scanning ${dir} ...`);
@@ -190,10 +193,13 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
     this.LogForThisClass('addEvent', `Adding event complete`);
   }
   private async OnMessageCreate(message: Message<boolean>) {
+    if (!message.guild) return;
     const thisSessionId = Command.generationUUid();
     const content = message.content;
-
-    if (!content.startsWith(this.BotPrefix)) {
+    const guildPrefix =
+      (this.CustomPrefix && this.CustomPrefix[message.guild.id]) ||
+      this.BotPrefix;
+    if (!content.startsWith(guildPrefix)) {
       return;
     }
     const command = content.toLowerCase().slice(1).split(' ');
@@ -245,6 +251,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
           isInteraction: false,
           CommandObject: this,
           MetaData: this.MetaData,
+          SetGuidPrefix: this.SetGuidPrefix.bind(this),
         });
         if (commandResult) {
           const messageAfterSend = await message.reply(commandResult);
@@ -319,6 +326,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
             sessionId: thisSessionId,
             CommandObject: this,
             MetaData: this.MetaData,
+            SetGuidPrefix: this.SetGuidPrefix.bind(this),
           });
           if (commandResult) {
             const InteractionSend = await interaction.editReply(commandResult);
@@ -412,6 +420,10 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
     return {
       [commandName]: commandFile,
     };
+  }
+  public SetGuidPrefix(guildId: string, prefix: string) {
+    this.CustomPrefix[guildId] = prefix;
+    return true;
   }
 }
 export { Log } from './module/LogClass';
