@@ -132,11 +132,12 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
       if (stat.isDirectory()) {
         resultDir = resultDir.concat(this.scanDir(filePath));
       } else if (filePath.endsWith(this.typescript ? '.ts' : '.js')) {
-        const commandName = path.join(
+        let commandName:string|null = path.join(
           dir,
           file.replace(this.typescript ? '.ts' : '.js', '')
         );
         resultDir.push(commandName);
+        commandName = null
       }
     }
     this.LogForThisClass('scanDir', `Scanning ${dir} complete`);
@@ -168,7 +169,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
       }
     }
     this.client.guilds.cache.forEach(async (guild) => {
-      return guild?.commands.set(slashCommand);
+      return await guild?.commands.set(slashCommand);
     });
     this.emit(
       'SuccessScanCommand',
