@@ -101,6 +101,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
   // eslint-disable-next-line @typescript-eslint/ban-types
   MetaData: MetaDataType;
   CustomPrefix: { [guidId: string]: string };
+  commandDir: string;
   constructor(client: Client, input: inputType<MetaDataType>) {
     super();
     this.allCommand = {};
@@ -116,10 +117,14 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
     this.typescript = input.typescript || true;
     this.MetaData = input.metaData;
     this.CustomPrefix = input.CustomPrefix || {};
-    const commandDir = input.commandDir;
-    let commandDirList: string[] | null | undefined = this.scanDir(commandDir);
+    this.commandDir = input.commandDir;
+  }
+  public init() {
+    let commandDirList: string[] | null | undefined = this.scanDir(
+      this.commandDir
+    );
     this.scanCommand(commandDirList);
-    this.addEvent(client);
+    this.addEvent(this.client);
     commandDirList = null;
   }
   private scanDir(dir: string) {
