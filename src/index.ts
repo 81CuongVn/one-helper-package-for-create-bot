@@ -40,6 +40,7 @@ interface CommandEvents<MetaDataType> {
     message: Message<boolean>;
     sessionId: string;
     SetIsReplyMessage: (data: boolean) => void;
+    CommandObject: Command<MetaDataType>;
   }) => PromiseOrType<void>;
   SuccessPossessOnMessageCreateEvent: (input: {
     message: Message<boolean>;
@@ -99,7 +100,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
   typescript: boolean;
   // eslint-disable-next-line @typescript-eslint/ban-types
   MetaData: MetaDataType;
-  CustomPrefix: { [guidId: string]: string; };
+  CustomPrefix: { [guidId: string]: string };
   constructor(client: Client, input: inputType<MetaDataType>) {
     super();
     this.allCommand = {};
@@ -132,12 +133,12 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
       if (stat.isDirectory()) {
         resultDir = resultDir.concat(this.scanDir(filePath));
       } else if (filePath.endsWith(this.typescript ? '.ts' : '.js')) {
-        let commandName:string|null = path.join(
+        let commandName: string | null = path.join(
           dir,
           file.replace(this.typescript ? '.ts' : '.js', '')
         );
         resultDir.push(commandName);
-        commandName = null
+        commandName = null;
       }
     }
     this.LogForThisClass('scanDir', `Scanning ${dir} complete`);
@@ -195,7 +196,19 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
   }
   private async OnMessageCreate(message: Message<boolean>) {
     if (!message.guild) return;
+
     const thisSessionId = Command.generationUUid();
+    let IsReplyMessage = true;
+    const SetIsReplyMessage = (data: boolean) => {
+      IsReplyMessage = data;
+    };
+    this.emit('startPossessOnMessageCreateEvent', {
+      message,
+      sessionId: thisSessionId,
+      SetIsReplyMessage,
+      CommandObject: this,
+    });
+    if (!IsReplyMessage) return;
     const content = message.content;
     const guildPrefix =
       (this.CustomPrefix && this.CustomPrefix[message.guild.id]) ||
@@ -206,19 +219,11 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
     const command = content.toLowerCase().slice(1).split(' ');
     const commandName = command.shift()?.toLowerCase();
     if (!commandName) return;
-    let IsReplyMessage = true;
-    const SetIsReplyMessage = (data: boolean) => {
-      IsReplyMessage = data;
-    };
+
     const commandDir =
       this.allCommand[commandName] ||
       this.allCommand[this.allAliases[commandName]];
     if (commandDir) {
-      this.emit('startPossessOnMessageCreateEvent', {
-        message,
-        sessionId: thisSessionId,
-        SetIsReplyMessage,
-      });
       this.LogForMessageAndInteractionFunc(
         'OnMessageCreate',
         `${message.author.username} send command : '${commandName}' , All content send '${content}' ...`
