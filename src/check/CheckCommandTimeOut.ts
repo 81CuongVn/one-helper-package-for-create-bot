@@ -13,7 +13,7 @@ export const checkCommandTimeOut = <MetaData>(
     if (Timeout[`${commandFile.name}${userId}`]) {
       const timeWait = moment
         .utc(Timeout[`${commandFile.name}${userId}`] - Date.now())
-        .format('HH:mm:ss [UTC]');
+        .format('HH:mm:ss');
     return BotMessageSend.commandCoolDown.replace('{time}', timeWait);
   }
 

@@ -16,9 +16,8 @@ const client = new Client({
 });
 
 const isDev = process.env.NODE_ENV !== 'production';
-type MetaData = {}
-client.on('ready', async () => {
-  const command = new Command<MetaData>(client, {
+type MetaData = {};
+const command = new Command<MetaData>(client, {
     commandDir: path.join(__dirname, './commands'),
     owner: ['889140130105929769'],
     isDev,
@@ -26,6 +25,8 @@ client.on('ready', async () => {
     metaData: {
     },
   });
+client.on('ready', async () => {
+  command.init();
   console.Log('Client', 'Ready to go! bot name :', client.user?.tag);
 });
 

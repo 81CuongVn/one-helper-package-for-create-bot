@@ -302,10 +302,15 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
         IsReplyMessage = data;
       };
       if (command) {
-        await interaction.deferReply();
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         const commandFile: ICommand<MetaDataType> = require(command).default;
         if (commandFile) {
+          await interaction.deferReply({
+            ephemeral: commandFile.ephemeralReply
+              ? commandFile.ephemeralReply
+              : false,
+          });
+
           this.emit('startPossessOnInteractionCreateEvent', {
             interaction,
             sessionId: thisSessionId,
@@ -324,6 +329,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
           );
           if (Check) {
             interaction.editReply(Check);
+
             return;
           }
 
@@ -434,7 +440,11 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
   }
   public SetGuidPrefix(guildId: string, prefix: string) {
     this.CustomPrefix[guildId] = prefix;
-    return true;
+    return this
+  }
+  public setDefaultPrefix(prefix: string) {
+    this.BotPrefix = prefix;
+    return this
   }
 }
 export { Log } from './module/LogClass';

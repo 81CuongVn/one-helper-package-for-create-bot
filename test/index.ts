@@ -21,16 +21,17 @@ const client = new Client({
   ],
 });
 const isDev = process.env.NODE_ENV !== 'production';
+const command = new Command<MetaData>(client, {
+  commandDir: path.join(__dirname, './commands'),
+  owner: ['889140130105929769'],
+  isDev,
+  LogForMessageAndInteraction: true,
+  metaData: {
+    a: 1,
+  },
+});
 client.on('ready', async () => {
-  const command = new Command<MetaData>(client, {
-    commandDir: path.join(__dirname, './commands'),
-    owner: ['889140130105929769'],
-    isDev,
-    LogForMessageAndInteraction: true,
-    metaData: {
-      a: 1,
-    },
-  });
+  command.init();
   // command.on(
   //   'startPossessOnMessageCreateEvent',
   //   ({ SetIsReplyMessage, message }) => {

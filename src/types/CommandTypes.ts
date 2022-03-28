@@ -64,4 +64,5 @@ export interface ICommand<MetaData> extends ISlashCommandHandlers {
   permission?: PermissionResolvable[];
   coolDown?: number;
   OnlyOwner?: boolean;
+  ephemeralReply?: boolean;
 }
