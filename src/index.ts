@@ -58,7 +58,7 @@ interface CommandEvents<MetaDataType> {
   SuccessPossessOnInteractionCreateEvent: (input: {
     interaction: CommandInteraction<CacheType>;
     sessionId: string;
-    InteractionSend: APIMessage | Message<boolean>;
+    InteractionSend: APIMessage | Message<boolean> | void;
     MetaData: MetaDataType;
   }) => PromiseOrType<void>;
   startGetAllCommand: () => PromiseOrType<void>;
@@ -306,11 +306,12 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         const commandFile: ICommand<MetaDataType> = require(command).default;
         if (commandFile) {
-          await interaction.deferReply({
-            ephemeral: commandFile.ephemeralReply
-              ? commandFile.ephemeralReply
-              : false,
-          });
+          if (commandFile.DeferReply)
+            await interaction.deferReply({
+              ephemeral: commandFile.ephemeralReply
+                ? commandFile.ephemeralReply
+                : false,
+            });
 
           this.emit('startPossessOnInteractionCreateEvent', {
             interaction,
@@ -329,7 +330,9 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
             this.BotMessageSend
           );
           if (Check) {
-            interaction.editReply(Check);
+            commandFile.DeferReply
+              ? interaction.editReply(Check)
+              : interaction.reply(Check);
 
             return;
           }
@@ -347,7 +350,9 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
             SetGuidPrefix: this.SetGuidPrefix.bind(this),
           });
           if (commandResult) {
-            const InteractionSend = await interaction.editReply(commandResult);
+            const InteractionSend = commandFile.DeferReply
+              ? await interaction.editReply(commandResult)
+              : await interaction.reply(commandResult);
             this.emit('SuccessPossessOnInteractionCreateEvent', {
               interaction,
               sessionId: thisSessionId,

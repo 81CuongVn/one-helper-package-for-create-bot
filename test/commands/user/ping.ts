@@ -14,7 +14,7 @@ export default {
   coolDown: moment.duration(10, 'seconds').asMilliseconds(),
   options: [],
   OnlyOwner: true,
-
+  DeferReply: false,
   callback: async ({
     client,
     CommandObject,
@@ -27,7 +27,7 @@ export default {
     // }
     CommandObject.on(
       'SuccessPossessOnMessageCreateEvent',
-      ({ messageAfterSend: messageSend, sessionId , MetaData}) => {
+      ({ messageAfterSend: messageSend, sessionId, MetaData }) => {
         if (sessionId === CommandSessionId) {
           messageSend.react('🇵');
           messageSend.react('🇴');
