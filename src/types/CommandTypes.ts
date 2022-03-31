@@ -65,4 +65,5 @@ export interface ICommand<MetaData> extends ISlashCommandHandlers {
   coolDown?: number;
   OnlyOwner?: boolean;
   ephemeralReply?: boolean;
+  OnlySlash?: boolean;
 }

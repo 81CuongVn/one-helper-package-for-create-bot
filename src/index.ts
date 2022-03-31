@@ -214,7 +214,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
       CommandObject: this,
     });
     if (!IsReplyMessage) return;
-    const content = message.content;
+    const content = message.content.trim();
     const guildPrefix =
       (this.CustomPrefix && this.CustomPrefix[message.guild.id]) ||
       this.BotPrefix;
@@ -222,7 +222,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
       return;
     }
     const command = content.toLowerCase().slice(1).split(' ');
-    const commandName = command.shift()?.toLowerCase();
+    const commandName = command.shift()?.toLowerCase().trim();
     if (!commandName) return;
 
     const commandDir =
@@ -239,6 +239,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
       message.channel.sendTyping();
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const commandFile: ICommand<MetaDataType> = require(commandDir).default;
+      if (commandFile.OnlySlash) return;
       if (commandFile) {
         const Check = checkForMessage(
           message,
@@ -440,11 +441,11 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
   }
   public SetGuidPrefix(guildId: string, prefix: string) {
     this.CustomPrefix[guildId] = prefix;
-    return this
+    return this;
   }
   public setDefaultPrefix(prefix: string) {
     this.BotPrefix = prefix;
-    return this
+    return this;
   }
 }
 export { Log } from './module/LogClass';
