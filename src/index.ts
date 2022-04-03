@@ -102,6 +102,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
   MetaData: MetaDataType;
   CustomPrefix: { [guidId: string]: string };
   commandDir: string;
+  testServer: string[];
   constructor(client: Client, input: inputType<MetaDataType>) {
     super();
     this.allCommand = {};
@@ -118,6 +119,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
     this.MetaData = input.metaData;
     this.CustomPrefix = input.CustomPrefix || {};
     this.commandDir = input.commandDir;
+    this.testServer = input.testServer || [];
   }
   public init() {
     let commandDirList: string[] | null | undefined = this.scanDir(
@@ -239,6 +241,27 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
       message.channel.sendTyping();
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const commandFile: ICommand<MetaDataType> = require(commandDir).default;
+      if (commandFile.testCommand)
+        if (!this.testServer.includes(message.guild.id)) {
+          const messageAfterSend = await message.reply({
+            content:
+              'This command is in test mode, please wait for the bot to be ready.',
+          });
+          this.emit('SuccessPossessOnMessageCreateEvent', {
+            message,
+            messageAfterSend,
+            commandName,
+            commandFile,
+            sessionId: thisSessionId,
+            MetaData: this.MetaData,
+          });
+          this.LogForMessageAndInteractionFunc(
+            'OnMessageCreate',
+            `${message.author.username} send command : '${commandName}' , All content send : '${content}' complete`
+          );
+
+          return;
+        }
       if (commandFile.OnlySlash) return;
       if (commandFile) {
         const Check = checkForMessage(
@@ -280,18 +303,18 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
             commandFile,
             message
           );
+          this.LogForMessageAndInteractionFunc(
+            'OnMessageCreate',
+            `${message.author.username} send command : '${commandName}' , All content send : '${content}' complete`
+          );
         }
-
-        this.LogForMessageAndInteractionFunc(
-          'OnMessageCreate',
-          `${message.author.username} send command : '${commandName}' , All content send : '${content}' complete`
-        );
       }
     }
   }
   private async OnInteractionCreate(interaction: Interaction<CacheType>) {
     if (interaction.isCommand()) {
       const thisSessionId = Command.generationUUid();
+      if (!interaction.guild) return;
 
       this.LogForMessageAndInteractionFunc(
         'OnInteractionCreate',
@@ -306,6 +329,24 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         const commandFile: ICommand<MetaDataType> = require(command).default;
         if (commandFile) {
+          if (commandFile.testCommand)
+            if (!this.testServer.includes(interaction.guild.id)) {
+              this.emit('SuccessPossessOnInteractionCreateEvent', {
+                interaction,
+                sessionId: thisSessionId,
+                InteractionSend: void 0,
+                MetaData: this.MetaData,
+              });
+              this.LogForMessageAndInteractionFunc(
+                'OnInteractionCreate',
+                `User ${interaction.member?.user.username} use command : '${interaction.commandName}' complete`
+              );
+              return interaction.reply({
+                content:
+                  'This command is in test mode, please wait for the bot to be ready.',
+                ephemeral: true,
+              });
+            }
           if (commandFile.DeferReply)
             await interaction.deferReply({
               ephemeral: commandFile.ephemeralReply
@@ -451,6 +492,18 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
   public setDefaultPrefix(prefix: string) {
     this.BotPrefix = prefix;
     return this;
+  }
+  public scanFileTsOrJsFile<FileType = any>(dir: string): FileType[] {
+    const allFileDir = this.scanDir(dir);
+    const result: FileType[] = [];
+    for (const fileDir of allFileDir) {
+      const fileName = path.basename(fileDir);
+      if (fileName.endsWith('.ts') || fileName.endsWith('.js')) {
+        const data: FileType = require(fileDir).default;
+        result.push(data);
+      }
+    }
+    return result;
   }
 }
 export { Log } from './module/LogClass';

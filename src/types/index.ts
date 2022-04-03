@@ -14,5 +14,6 @@ export interface inputType<MetaDataType> {
   CustomPrefix?: {
     [guidId: string]: string;
   };
+  testServer?: string[];
 }
 export type PromiseOrType<T> = T | Promise<T>;

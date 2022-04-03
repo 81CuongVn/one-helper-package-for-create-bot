@@ -29,6 +29,7 @@ const command = new Command<MetaData>(client, {
   metaData: {
     a: 1,
   },
+  testServer:[]
 });
 client.on('ready', async () => {
   command.init();
@@ -54,6 +55,7 @@ client.on('ready', async () => {
   // });
   // client.user?.setUsername('developers-bot-discord');
   Log.Log('Client', 'Ready to go! bot name :', client.user?.tag);
+  // command.scanFileTsOrJsFile("./commands/")
 });
 
 client.login(process.env.BOT_KEY);

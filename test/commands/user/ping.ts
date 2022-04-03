@@ -15,6 +15,7 @@ export default {
   options: [],
   OnlyOwner: true,
   DeferReply: false,
+  testCommand:true,
   callback: async ({
     client,
     CommandObject,
