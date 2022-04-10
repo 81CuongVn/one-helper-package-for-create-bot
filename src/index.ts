@@ -176,8 +176,14 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
         this.LogForThisClass(`${command} is not a valid command`);
       }
     }
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const _this = this;
     this.client.guilds.cache.forEach(async (guild) => {
-      return await guild?.commands.set(slashCommand);
+      _this.testServer.includes(guild.id)
+        ? await guild?.commands.set(slashCommand)
+        : await guild?.commands.set(
+            slashCommand.filter((command) => !command.testCommand)
+          );
     });
     this.emit(
       'SuccessScanCommand',
