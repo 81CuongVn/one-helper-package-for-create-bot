@@ -1,25 +1,24 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-var-requires */
-import fs from 'fs';
-import path from 'path';
+import { APIMessage } from 'discord-api-types';
+import RPC from 'discord-rpc';
 import {
   CacheType,
   Client,
-  CommandInteraction,
-  Interaction,
-  Message,
+  CommandInteraction, Interaction,
+  Message
 } from 'discord.js';
-import { ICommand } from './types/CommandTypes';
-import { Log } from './module/LogClass';
-import RPC from 'discord-rpc';
-import { checkForMessage } from './check/CheckForMessage';
-import { checkForInteraction } from './check/CheckForInteraction';
-import { OnMessageCommandDone } from './module/OnMessageCommandDone';
-import { OnInteractionCommandDone } from './module/OnInteractionCommandDone';
-import { messageSend } from './message';
-import { IBotMessageSend, inputType, PromiseOrType } from './types';
 import EventEmitter from 'events';
-import { APIMessage } from 'discord-api-types';
+import fs from 'fs';
+import path from 'path';
+import { checkForInteraction } from './check/CheckForInteraction';
+import { checkForMessage } from './check/CheckForMessage';
+import { messageSend } from './message';
+import { Log } from './module/LogClass';
+import { OnInteractionCommandDone } from './module/OnInteractionCommandDone';
+import { OnMessageCommandDone } from './module/OnMessageCommandDone';
+import { IBotMessageSend, inputType, PromiseOrType } from './types';
+import { ICommand } from './types/CommandTypes';
 
 interface CommandEvents<MetaDataType> {
   startScanDir: () => PromiseOrType<void>;
@@ -67,6 +66,10 @@ interface CommandEvents<MetaDataType> {
   }) => PromiseOrType<void>;
   startSetRpc: () => PromiseOrType<void>;
   SuccessSetRpc: (rpcClient: RPC.Client) => PromiseOrType<void>;
+  addCommandOnBotJoin: () => PromiseOrType<void>;
+  SuccessAddCommandOnBotJoin: (
+    slashCommand: ICommand<MetaDataType>[]
+  ) => PromiseOrType<void>;
 }
 export declare interface Command<MetaDataType>
   extends EventEmitter.EventEmitter {
@@ -103,6 +106,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
   CustomPrefix: { [guidId: string]: string };
   commandDir: string;
   testServer: string[];
+  commandDirList: string[];
   constructor(client: Client, input: inputType<MetaDataType>) {
     super();
     this.allCommand = {};
@@ -122,12 +126,9 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
     this.testServer = input.testServer || [];
   }
   public init() {
-    let commandDirList: string[] | null | undefined = this.scanDir(
-      this.commandDir
-    );
-    this.scanCommand(commandDirList);
+    this.commandDirList = this.scanDir(this.commandDir);
+    this.scanCommand(this.commandDirList);
     this.addEvent(this.client);
-    commandDirList = null;
   }
   private scanDir(dir: string) {
     this.LogForThisClass('scanDir', `Scanning ${dir} ...`);
@@ -152,13 +153,13 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
     this.emit('SuccessScanDir', resultDir);
     return resultDir;
   }
-  private scanCommand(commandDir: string[]) {
+  private scanCommand(commandDirs: string[]) {
     this.LogForThisClass('scanCommand', `Scanning command ...`);
     this.emit('startScanCommand');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const slashCommand: any[] = [];
-    for (const command of commandDir) {
-      const commandFile = require(command).default
+    const slashCommand: ICommand<MetaDataType>[] = [];
+    for (const command of commandDirs) {
+      const commandFile:ICommand<MetaDataType> = require(command).default
         ? require(command).default
         : require(command);
       if (commandFile) {
@@ -193,16 +194,44 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
     );
     this.LogForThisClass('scanCommand', `Scanning command complete`);
   }
+  private async addSlashCommandToGuild(guildId: string) {
+    this.emit('addCommandOnBotJoin');
+    this.LogForThisClass('addSlashCommand', `Add slash command ...`);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const slashCommand: ICommand<MetaDataType>[] = [];
+
+    for (const commandDir of this.commandDirList) {
+      const commandFile: ICommand<MetaDataType> = require(commandDir).default
+        ? require(commandDir).default
+        : require(commandDir);
+      if (commandFile.isSlash) {
+        slashCommand.push(commandFile);
+      }
+    }
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const slashCommandSet = this.testServer.includes(guildId)
+      ? slashCommand
+      : slashCommand.filter((command) => !command.testCommand);
+    this.client.guilds.fetch(guildId).then((guild) => {
+      guild?.commands.set(slashCommandSet);
+    });
+    this.emit('SuccessAddCommandOnBotJoin', slashCommand);
+    this.LogForThisClass('addSlashCommand', `Add slash command complete`);
+  }
   private addEvent(client: Client) {
     this.LogForThisClass('addEvent', `Adding event ...`);
     this.emit('startAddEvent');
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const _this = this;
-    client.on('messageCreate', (message) => {
-      _this.OnMessageCreate(message);
+    client.on('messageCreate', async (message) => {
+      await _this.OnMessageCreate(message);
     });
     client.on('interactionCreate', async (interaction) => {
       _this.OnInteractionCreate(interaction);
+    });
+    client.on('guildCreate', async (guild) => {
+      await this.addSlashCommandToGuild(guild.id);
     });
     this.emit('SuccessAddEvent');
     this.LogForThisClass('addEvent', `Adding event complete`);
@@ -499,7 +528,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
     this.BotPrefix = prefix;
     return this;
   }
-  public scanFileTsOrJsFile<FileType = any>(dir: string): FileType[] {
+  public scanFileTsOrJsFile<FileType>(dir: string): FileType[] {
     const allFileDir = this.scanDir(dir);
     const result: FileType[] = [];
     for (const fileDir of allFileDir) {
@@ -513,5 +542,6 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
   }
 }
 export { Log } from './module/LogClass';
-export * from './types/CommandTypes';
 export * from './types/';
+export * from './types/CommandTypes';
+

@@ -29,7 +29,7 @@ const command = new Command<MetaData>(client, {
   metaData: {
     a: 1,
   },
-  testServer: [''],
+  testServer: ['940174517458849862'],
 });
 client.on('ready', async () => {
   command.init();

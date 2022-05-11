@@ -1,16 +1,16 @@
+/* eslint-disable @typescript-eslint/no-empty-interface */
 import {
-  Client,
-  MessagePayload,
-  ReplyMessageOptions,
   CacheType,
-  Message,
-  PermissionResolvable,
-  ApplicationCommandOptionData,
-  ApplicationCommandType,
+  ChatInputApplicationCommandData,
+  Client,
+  CommandInteraction,
   CommandInteractionOption,
   CommandInteractionOptionResolver,
-  CommandInteraction,
-} from 'discord.js';
+  Message,
+  MessagePayload,
+  PermissionResolvable,
+  ReplyMessageOptions,
+} from 'discord.js/typings';
 import { PromiseOrType } from '.';
 import { Command } from '../';
 
@@ -44,15 +44,12 @@ export type InputCallBack<MetaData> = InputCallBackForInteraction<MetaData> &
   InputCallBackForMessage<MetaData>;
 
 // ApplicationCommandDataResolvable
-export interface ISlashCommandHandlers {
-  type?: ApplicationCommandType;
-  defaultPermission?: boolean;
-  options?: Array<ApplicationCommandOptionData>;
-}
+export interface ISlashCommandHandlers
+  extends ChatInputApplicationCommandData {}
 
 export interface ICommand<MetaData> extends ISlashCommandHandlers {
   name: string;
-  description?: string;
+  description: string;
   category?: string;
   isSlash?: boolean;
   callback: (
