@@ -5,8 +5,9 @@ import RPC from 'discord-rpc';
 import {
   CacheType,
   Client,
-  CommandInteraction, Interaction,
-  Message
+  CommandInteraction,
+  Interaction,
+  Message,
 } from 'discord.js';
 import EventEmitter from 'events';
 import fs from 'fs';
@@ -140,7 +141,10 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
       const stat = fs.statSync(filePath);
       if (stat.isDirectory()) {
         resultDir = resultDir.concat(this.scanDir(filePath));
-      } else if (filePath.endsWith(this.typescript ? '.ts' : '.js')) {
+      } else if (
+        filePath.endsWith(this.typescript ? '.ts' : '.js') &&
+        !filePath.endsWith('.d.ts')
+      ) {
         let commandName: string | null = path.join(
           dir,
           file.replace(this.typescript ? '.ts' : '.js', '')
@@ -159,7 +163,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const slashCommand: ICommand<MetaDataType>[] = [];
     for (const command of commandDirs) {
-      const commandFile:ICommand<MetaDataType> = require(command).default
+      const commandFile: ICommand<MetaDataType> = require(command).default
         ? require(command).default
         : require(command);
       if (commandFile) {
@@ -544,4 +548,3 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
 export { Log } from './module/LogClass';
 export * from './types/';
 export * from './types/CommandTypes';
-
