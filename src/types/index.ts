@@ -1,3 +1,5 @@
+import { Message } from "discord.js";
+
 export interface IBotMessageSend {
   commandCoolDown: string;
   DonHavePermissionToUseCommand: string;
@@ -11,9 +13,7 @@ export interface inputType<MetaDataType> {
   BotMessageSend?: IBotMessageSend;
   typescript?: boolean;
   metaData: MetaDataType;
-  CustomPrefix?: {
-    [guidId: string]: string;
-  };
+  CustomPrefix?: (message: Message<boolean>) => string;
   testServer?: string[];
 }
 export type PromiseOrType<T> = T | Promise<T>;

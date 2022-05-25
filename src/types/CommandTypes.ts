@@ -24,7 +24,6 @@ interface BaseInputCallBack<MetaDataType> {
   client: Client;
   CommandObject: Command<MetaDataType>;
   MetaData: MetaDataType;
-  SetGuidPrefix?: (guildId: string, prefix: string) => boolean;
 }
 interface InputCallBackForInteraction<MetaData>
   extends BaseInputCallBack<MetaData> {

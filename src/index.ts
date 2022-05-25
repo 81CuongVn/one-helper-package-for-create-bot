@@ -104,7 +104,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
   typescript: boolean;
   // eslint-disable-next-line @typescript-eslint/ban-types
   MetaData: MetaDataType;
-  CustomPrefix: { [guidId: string]: string };
+  CustomPrefix: (message: Message<boolean>) => string;
   commandDir: string;
   testServer: string[];
   commandDirList: string[];
@@ -122,7 +122,9 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
     this.BotMessageSend = input.BotMessageSend || messageSend.vi;
     this.typescript = input.typescript || true;
     this.MetaData = input.metaData;
-    this.CustomPrefix = input.CustomPrefix || {};
+    this.CustomPrefix = input.CustomPrefix
+      ? input.CustomPrefix
+      : (message) => this.BotPrefix;
     this.commandDir = input.commandDir;
     this.testServer = input.testServer || [];
   }
@@ -257,7 +259,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
     if (!IsReplyMessage) return;
     const content = message.content.trim();
     const guildPrefix =
-      (this.CustomPrefix && this.CustomPrefix[message.guild.id]) ||
+      (this.CustomPrefix && this.CustomPrefix(message)) ||
       this.BotPrefix;
     if (!content.startsWith(guildPrefix)) {
       return;
@@ -325,7 +327,6 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
           isInteraction: false,
           CommandObject: this,
           MetaData: this.MetaData,
-          SetGuidPrefix: this.SetGuidPrefix.bind(this),
         });
         if (commandResult) {
           const messageAfterSend = await message.reply(commandResult);
@@ -427,7 +428,6 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
             sessionId: thisSessionId,
             CommandObject: this,
             MetaData: this.MetaData,
-            SetGuidPrefix: this.SetGuidPrefix.bind(this),
           });
           if (commandResult) {
             const InteractionSend = commandFile.DeferReply
@@ -524,10 +524,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
       [commandName]: commandFile,
     };
   }
-  public SetGuidPrefix(guildId: string, prefix: string) {
-    this.CustomPrefix[guildId] = prefix;
-    return this;
-  }
+  
   public setDefaultPrefix(prefix: string) {
     this.BotPrefix = prefix;
     return this;
