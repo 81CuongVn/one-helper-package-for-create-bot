@@ -10,8 +10,7 @@
   ],
   "scripts": {
     "dev": "nodemon test/index.ts",
-    "build": "rm -rf dist && tsc ",
-    "prepare": "npm run build"
+    "build": "rm -rf dist && tsc "
   },
   "author": "Tritran Duc <tritranduc> (https://github.com/tritranduc)",
   "license": "ISC",
@@ -20,10 +19,11 @@
     "@typescript-eslint/eslint-plugin": "^5.15.0",
     "@typescript-eslint/parser": "^5.15.0",
     "eslint": "^8.10.0",
-    "typescript": "^4.5.5"
+    "typescript": "^4.7.2"
   },
   "dependencies": {
     "@types/discord-rpc": "^4.0.1",
+    "discord-api-types": "^0.33.0",
     "discord-rpc": "^4.0.1",
     "discord.js": "^13.6.0",
     "dotenv": "^16.0.0",

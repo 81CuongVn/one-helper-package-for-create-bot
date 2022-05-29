@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { APIMessage } from 'discord-api-types';
 import RPC from 'discord-rpc';
 import {
   CacheType,
   Client,
   CommandInteraction,
   Interaction,
+  InteractionReplyOptions,
   Message,
 } from 'discord.js';
 import EventEmitter from 'events';
@@ -58,7 +58,7 @@ interface CommandEvents<MetaDataType> {
   SuccessPossessOnInteractionCreateEvent: (input: {
     interaction: CommandInteraction<CacheType>;
     sessionId: string;
-    InteractionSend: APIMessage | Message<boolean> | void;
+    InteractionSend: Message<boolean> | void;
     MetaData: MetaDataType;
   }) => PromiseOrType<void>;
   startGetAllCommand: () => PromiseOrType<void>;
@@ -124,7 +124,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
     this.MetaData = input.metaData;
     this.CustomPrefix = input.CustomPrefix
       ? input.CustomPrefix
-      : (message) => this.BotPrefix;
+      : () => this.BotPrefix;
     this.commandDir = input.commandDir;
     this.testServer = input.testServer || [];
   }
@@ -259,8 +259,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
     if (!IsReplyMessage) return;
     const content = message.content.trim();
     const guildPrefix =
-      (this.CustomPrefix && this.CustomPrefix(message)) ||
-      this.BotPrefix;
+      (this.CustomPrefix && this.CustomPrefix(message)) || this.BotPrefix;
     if (!content.startsWith(guildPrefix)) {
       return;
     }
@@ -432,11 +431,15 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
           if (commandResult) {
             const InteractionSend = commandFile.DeferReply
               ? await interaction.editReply(commandResult)
-              : await interaction.reply(commandResult);
+              : await interaction.reply(
+                  commandResult as InteractionReplyOptions & {
+                    fetchReply: true;
+                  }
+                );
             this.emit('SuccessPossessOnInteractionCreateEvent', {
               interaction,
               sessionId: thisSessionId,
-              InteractionSend,
+              InteractionSend: InteractionSend as Message,
               MetaData: this.MetaData,
             });
           }
@@ -524,7 +527,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
       [commandName]: commandFile,
     };
   }
-  
+
   public setDefaultPrefix(prefix: string) {
     this.BotPrefix = prefix;
     return this;

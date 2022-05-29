@@ -34,7 +34,7 @@ export default {
           messageSend.react('🇴');
           messageSend.react('🇳');
           messageSend.react('🇬');
-          console.log(MetaData.a);
+          console.log(sessionId);
         }
       }
     );
