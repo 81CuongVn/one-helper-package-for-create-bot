@@ -1,6 +1,6 @@
 {
   "name": "helper-package-create-discord-bot",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "the one package help you create a bot with discord",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -10,7 +10,8 @@
   ],
   "scripts": {
     "dev": "nodemon test/index.ts",
-    "build": "rm -rf dist && tsc "
+    "build": "rm -rf dist && tsc ",
+    "prepare": "npm run build "
   },
   "author": "Tritran Duc <tritranduc> (https://github.com/tritranduc)",
   "license": "ISC",
