@@ -128,9 +128,9 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
     this.commandDir = input.commandDir;
     this.testServer = input.testServer || [];
   }
-  public init() {
+  public async init() {
     this.commandDirList = this.scanDir(this.commandDir);
-    this.scanCommand(this.commandDirList);
+    await this.scanCommand(this.commandDirList);
     this.addEvent(this.client);
   }
   private scanDir(dir: string) {
@@ -159,15 +159,16 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
     this.emit('SuccessScanDir', resultDir);
     return resultDir;
   }
-  private scanCommand(commandDirs: string[]) {
+  private async scanCommand(commandDirs: string[]) {
     this.LogForThisClass('scanCommand', `Scanning command ...`);
     this.emit('startScanCommand');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const slashCommand: ICommand<MetaDataType>[] = [];
     for (const command of commandDirs) {
-      const commandFile: ICommand<MetaDataType> = require(command).default
-        ? require(command).default
-        : require(command);
+      const commandFile: ICommand<MetaDataType> = (await import(command))
+        .default
+        ? (await import(command)).default
+        : await import(command);
       if (commandFile) {
         const commandName = commandFile.name;
         this.allCommand[commandName] = command;
@@ -208,9 +209,10 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
     const slashCommand: ICommand<MetaDataType>[] = [];
 
     for (const commandDir of this.commandDirList) {
-      const commandFile: ICommand<MetaDataType> = require(commandDir).default
-        ? require(commandDir).default
-        : require(commandDir);
+      const commandFile: ICommand<MetaDataType> = (await import(commandDir))
+        .default
+        ? (await import(commandDir)).default
+        : await import(commandDir);
       if (commandFile.isSlash) {
         slashCommand.push(commandFile);
       }

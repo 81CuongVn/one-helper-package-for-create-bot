@@ -35,7 +35,7 @@ const command = new Command<MetaData>(client, {
   },
 });
 client.on('ready', async () => {
-  command.init();
+  await command.init();
   // command.on(
   //   'startPossessOnMessageCreateEvent',
   //   ({ SetIsReplyMessage, message }) => {
