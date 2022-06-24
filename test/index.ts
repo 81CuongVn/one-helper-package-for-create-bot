@@ -29,9 +29,9 @@ const command = new Command<MetaData>(client, {
   metaData: {
     a: 1,
   },
-  testServer: ['940174517458849862'],
+  testServer: ['984361218393374761'],
   CustomPrefix: (message) => {
-    return message.guild?.id === '940174517458849862' ? '!' : '.';
+    return message.guild?.id === '984361218393374761' ? '!' : '.';
   },
 });
 client.on('ready', async () => {

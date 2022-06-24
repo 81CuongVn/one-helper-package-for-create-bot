@@ -16,19 +16,21 @@ export default {
   OnlyOwner: true,
   DeferReply: false,
   testCommand:true,
-  callback: async ({
-    client,
-    CommandObject,
-    sessionId: CommandSessionId,
-    MetaData,
-  }) => {
+  callback: async (input) => {
     // console.log(getAllCommand())
     // if (InteractionOrMessage instanceof Message) {
     //   console.log(InteractionOrMessage.author.username);
     // }
+    const { CommandObject, sessionId: CommandSessionId, MetaData, client, type } = input
+    if (type == "message") {
+      console.log(input.Message.content)
+    } else {
+      console.log(input.Interaction.commandName)
+    }
+    
     CommandObject.on(
       'SuccessPossessOnMessageCreateEvent',
-      ({ messageAfterSend: messageSend, sessionId, MetaData }) => {
+      ({ messageAfterSend: messageSend, sessionId }) => {
         if (sessionId === CommandSessionId) {
           messageSend.react('🇵');
           messageSend.react('🇴');
@@ -38,7 +40,7 @@ export default {
         }
       }
     );
-    console.log(MetaData.a);
+    console.log(MetaData?.a);
     return `Pong! ${client.ws.ping}ms`;
   },
 } as ICommand<MetaData>;

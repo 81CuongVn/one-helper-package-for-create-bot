@@ -1,4 +1,5 @@
-import { Message } from "discord.js";
+import { Message } from 'discord.js';
+import { callbackFunc } from './CommandTypes';
 
 export interface IBotMessageSend {
   commandCoolDown: string;
@@ -15,5 +16,6 @@ export interface inputType<MetaDataType> {
   metaData: MetaDataType;
   CustomPrefix?: (message: Message<boolean>) => string;
   testServer?: string[];
+  alwayRunFunc?: callbackFunc<MetaDataType>;
 }
 export type PromiseOrType<T> = T | Promise<T>;

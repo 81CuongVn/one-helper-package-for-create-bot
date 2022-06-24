@@ -15,9 +15,14 @@ import path from 'path';
 import { checkForInteraction } from './check/CheckForInteraction';
 import { checkForMessage } from './check/CheckForMessage';
 import { messageSend } from './message';
+import {
+  InputCallBackForInteraction,
+  InputCallBackForMessage,
+} from './module/InputCallbackFunc';
 import { Log } from './module/LogClass';
 import { OnInteractionCommandDone } from './module/OnInteractionCommandDone';
 import { OnMessageCommandDone } from './module/OnMessageCommandDone';
+import { RunFunc } from './module/RunFunc';
 import { IBotMessageSend, inputType, PromiseOrType } from './types';
 import { ICommand } from './types/CommandTypes';
 
@@ -108,6 +113,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
   commandDir: string;
   testServer: string[];
   commandDirList: string[];
+  runFunc: RunFunc<MetaDataType>;
   constructor(client: Client, input: inputType<MetaDataType>) {
     super();
     this.allCommand = {};
@@ -127,6 +133,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
       : () => this.BotPrefix;
     this.commandDir = input.commandDir;
     this.testServer = input.testServer || [];
+    this.runFunc = new RunFunc(input.alwayRunFunc);
   }
   public async init() {
     this.commandDirList = this.scanDir(this.commandDir);
@@ -318,17 +325,19 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
           message.reply(Check);
           return;
         }
-
-        const commandResult = await commandFile.callback({
-          client: this.client,
-          Message: message,
-          getAllCommand: this.getAllCommand.bind(this),
-          args: command,
-          sessionId: thisSessionId,
-          isInteraction: false,
-          CommandObject: this,
-          MetaData: this.MetaData,
-        });
+        const callbackInput = new InputCallBackForMessage(
+          thisSessionId,
+          this.getAllCommand.bind(this),
+          this.client,
+          this,
+          command,
+          message,
+          this.MetaData
+        );
+        const commandResult = await this.runFunc.run(
+          callbackInput,
+          commandFile.callback
+        );
         if (commandResult) {
           const messageAfterSend = await message.reply(commandResult);
           this.emit('SuccessPossessOnMessageCreateEvent', {
@@ -418,18 +427,20 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
 
             return;
           }
-
-          const commandResult = await commandFile.callback({
-            client: this.client,
-            Interaction: interaction,
-            getAllCommand: this.getAllCommand.bind(this),
-            isInteraction: true,
-            RawOption: interaction.options.data,
-            option: interaction.options,
-            sessionId: thisSessionId,
-            CommandObject: this,
-            MetaData: this.MetaData,
-          });
+          const inputCallback = new InputCallBackForInteraction(
+            thisSessionId,
+            this.getAllCommand.bind(this),
+            this.client,
+            this,
+            interaction,
+            interaction.options.data,
+            interaction.options,
+            this.MetaData
+          );
+          const commandResult = await this.runFunc.run(
+            inputCallback,
+            commandFile.callback
+          );
           if (commandResult) {
             const InteractionSend = commandFile.DeferReply
               ? await interaction.editReply(commandResult)
