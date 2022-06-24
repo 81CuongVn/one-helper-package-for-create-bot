@@ -336,7 +336,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
         );
         const commandResult = await this.runFunc.run(
           callbackInput,
-          commandFile.callback
+          commandFile.callback,commandFile.handleEvent
         );
         if (commandResult) {
           const messageAfterSend = await message.reply(commandResult);
@@ -439,7 +439,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
           );
           const commandResult = await this.runFunc.run(
             inputCallback,
-            commandFile.callback
+            commandFile.callback,commandFile.handleEvent
           );
           if (commandResult) {
             const InteractionSend = commandFile.DeferReply

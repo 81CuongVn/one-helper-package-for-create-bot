@@ -40,4 +40,5 @@ export interface ICommand<MetaData> extends ISlashCommandHandlers {
   OnlySlash?: boolean;
   DeferReply?: boolean;
   testCommand?: boolean;
+  handleEvent?:callbackFunc<MetaData>
 }
