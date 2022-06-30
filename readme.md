@@ -15,7 +15,7 @@ document [link to document click to go](./document/main.md)
 - [x] proses the slash command
 - [x] check permission to use command
 - [x] have the command time out(command cooldown)
-- [ ] sub command for message and interation
+- [ ] sub command for message and interaction
 
 ## **Links**
 
