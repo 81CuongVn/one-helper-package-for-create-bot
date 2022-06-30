@@ -15,19 +15,25 @@ export default {
   options: [],
   OnlyOwner: true,
   DeferReply: false,
-  testCommand:true,
+  testCommand: true,
   callback: async (input) => {
     // console.log(getAllCommand())
     // if (InteractionOrMessage instanceof Message) {
     //   console.log(InteractionOrMessage.author.username);
     // }
-    const { CommandObject, sessionId: CommandSessionId, MetaData, client, type } = input
-    if (type == "message") {
-      console.log(input.Message.content)
+    const {
+      CommandObject,
+      sessionId: CommandSessionId,
+      MetaData,
+      client,
+      type,
+    } = input;
+    if (type == 'message') {
+      console.log(input.Message.content);
     } else {
-      console.log(input.Interaction.commandName)
+      console.log(input.Interaction.commandName);
     }
-    
+
     CommandObject.on(
       'SuccessPossessOnMessageCreateEvent',
       ({ messageAfterSend: messageSend, sessionId }) => {

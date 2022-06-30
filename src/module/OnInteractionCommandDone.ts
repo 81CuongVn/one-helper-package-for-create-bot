@@ -6,7 +6,7 @@ export const OnInteractionCommandDone = <MetaData>(
     [key: string]: number;
   },
   commandFile: ICommand<MetaData>,
-  Interaction: Interaction<CacheType>,
+  Interaction: Interaction<CacheType>
 ) => {
   if (commandFile.coolDown) {
     Timeout[`${commandFile.name}${Interaction.user.id}`] =

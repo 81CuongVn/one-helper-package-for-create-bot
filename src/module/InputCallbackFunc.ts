@@ -59,7 +59,9 @@ export class InputCallBackForInteraction<
     this.option = option;
   }
 }
-export class InputCallBackForMessage<MetaData> extends BaseInputCallBack<MetaData> {
+export class InputCallBackForMessage<
+  MetaData
+> extends BaseInputCallBack<MetaData> {
   public args: string[];
   public Message: Message<boolean>;
   public declare type: 'message';

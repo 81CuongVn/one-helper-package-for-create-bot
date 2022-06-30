@@ -1,6 +1,6 @@
 {
   "name": "helper-package-create-discord-bot",
-  "version": "1.1.12",
+  "version": "1.2.12",
   "description": "the one package help you create a bot with discord",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -11,24 +11,25 @@
   "scripts": {
     "dev": "nodemon test/index.ts",
     "build": "rm -rf dist && tsc ",
-    "prepare": "npm run build "
+    "prepare": "npm run build ",
+    "format":"prettier --write --ignore-path .gitignore ."
   },
   "author": "Tritran Duc <tritranduc> (https://github.com/tritranduc)",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^17.0.21",
-    "@typescript-eslint/eslint-plugin": "^5.15.0",
-    "@typescript-eslint/parser": "^5.15.0",
+    "@typescript-eslint/eslint-plugin": "^5.30.0",
+    "@typescript-eslint/parser": "^5.30.0",
     "eslint": "^8.10.0",
     "typescript": "^4.7.2"
   },
   "dependencies": {
     "@types/discord-rpc": "^4.0.1",
-    "discord-api-types": "^0.33.0",
     "discord-rpc": "^4.0.1",
-    "discord.js": "^13.6.0",
+    "discord.js": "^13.8.1",
     "dotenv": "^16.0.0",
-    "moment": "^2.29.1"
+    "moment": "^2.29.1",
+    "prettier": "^2.7.1"
   },
   "directories": {
     "test": "test"

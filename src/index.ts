@@ -70,6 +70,10 @@ interface CommandEvents<MetaDataType> {
   SuccessGetAllCommand: (allCommand: {
     [key: string]: ICommand<MetaDataType>;
   }) => PromiseOrType<void>;
+  startGetAllCommandByCategory: () => PromiseOrType<void>;
+  SuccessGetAllCommandByCategory: (allCommand: {
+    [key: string]: ICommand<MetaDataType>[];
+  }) => PromiseOrType<void>;
   startSetRpc: () => PromiseOrType<void>;
   SuccessSetRpc: (rpcClient: RPC.Client) => PromiseOrType<void>;
   addCommandOnBotJoin: () => PromiseOrType<void>;
@@ -336,7 +340,8 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
         );
         const commandResult = await this.runFunc.run(
           callbackInput,
-          commandFile.callback,commandFile.handleEvent
+          commandFile.callback,
+          commandFile.handleEvent
         );
         if (commandResult) {
           const messageAfterSend = await message.reply(commandResult);
@@ -439,7 +444,8 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
           );
           const commandResult = await this.runFunc.run(
             inputCallback,
-            commandFile.callback,commandFile.handleEvent
+            commandFile.callback,
+            commandFile.handleEvent
           );
           if (commandResult) {
             const InteractionSend = commandFile.DeferReply
@@ -556,6 +562,36 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
       }
     }
     return result;
+  }
+  public getAllCommandByCategory() {
+        this.LogForThisClass(
+          'getAllCommandByCategory',
+          `Getting all command ...`
+        );
+        this.emit('startGetAllCommandByCategory');
+        const resultCommand: {
+          [key: string]: ICommand<MetaDataType>[];
+        } = {};
+        for (const commandName of Object.keys(this.allCommand)) {
+          const commandDir = this.allCommand[commandName];
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
+          const commandFile: ICommand<MetaDataType> =
+            require(commandDir).default;
+          if (!commandFile.category){
+            throw new Error("missing category property")
+          }
+          if (!resultCommand[commandFile.category]) {
+            resultCommand[commandFile.category] = [commandFile];
+          } else {
+            resultCommand[commandFile.category].push(commandFile)
+          }
+        }
+        this.LogForThisClass(
+          'getAllCommandByCategory',
+          `Getting all command complete`
+        );
+        this.emit('SuccessGetAllCommandByCategory', resultCommand);
+        return resultCommand;
   }
 }
 export { Log } from './module/LogClass';
