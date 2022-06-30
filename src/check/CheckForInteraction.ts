@@ -3,7 +3,7 @@ import { CacheType, Interaction } from 'discord.js';
 import { checkPermissions } from './permissions';
 import { checkOnlyForOwner } from './CheckOnlyForOwner';
 import { checkCommandTimeOut } from './CheckCommandTimeOut';
-import { IBotMessageSend } from './../types/index';
+import { IBotMessageSend } from '../types/command';
 
 export const checkForInteraction = <MetaData>(
   interaction: Interaction<CacheType>,

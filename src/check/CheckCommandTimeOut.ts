@@ -1,6 +1,6 @@
 import moment from 'moment';
 import { ICommand } from 'src/types/CommandTypes';
-import { IBotMessageSend } from './../types/index';
+import { IBotMessageSend } from '../types/command';
 
 export const checkCommandTimeOut = <MetaData>(
   commandFile: ICommand<MetaData>,

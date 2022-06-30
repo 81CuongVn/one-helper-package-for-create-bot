@@ -3,7 +3,7 @@ import { Message } from 'discord.js';
 import { checkPermissions } from './permissions';
 import { checkOnlyForOwner } from './CheckOnlyForOwner';
 import { checkCommandTimeOut } from './CheckCommandTimeOut';
-import { IBotMessageSend } from '../types';
+import { IBotMessageSend } from '../types/command';
 
 export const checkForMessage = <Metadata>(
   message: Message<boolean>,

@@ -6,7 +6,7 @@ dotenv.config({
   path: path.join(__dirname, './.env'),
 });
 import { allIntents } from './constants';
-import { Command } from '../src/index';
+import { Command, SubCommand } from '../src/index';
 import { MetaData } from './types/MetaDataType';
 
 const client = new Client({
@@ -34,8 +34,13 @@ const command = new Command<MetaData>(client, {
     return message.guild?.id === '984361218393374761' ? '!' : '.';
   },
 });
+const subCommand = new SubCommand({
+  SubCommandPath: path.join(__dirname, './subCommand'),
+  client
+});
 client.on('ready', async () => {
   await command.init();
+  await subCommand.init();
   // command.on(
   //   'startPossessOnMessageCreateEvent',
   //   ({ SetIsReplyMessage, message }) => {

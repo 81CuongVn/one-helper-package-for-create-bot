@@ -12,11 +12,12 @@
     "dev": "nodemon test/index.ts",
     "build": "rm -rf dist && tsc ",
     "prepare": "npm run build ",
-    "format":"prettier --write --ignore-path .gitignore ."
+    "format": "prettier --write --ignore-path .gitignore ."
   },
   "author": "Tritran Duc <tritranduc> (https://github.com/tritranduc)",
   "license": "ISC",
   "devDependencies": {
+    "@types/glob": "^7.2.0",
     "@types/node": "^17.0.21",
     "@typescript-eslint/eslint-plugin": "^5.30.0",
     "@typescript-eslint/parser": "^5.30.0",
@@ -28,6 +29,7 @@
     "discord-rpc": "^4.0.1",
     "discord.js": "^13.8.1",
     "dotenv": "^16.0.0",
+    "glob": "^8.0.3",
     "moment": "^2.29.1",
     "prettier": "^2.7.1"
   },
