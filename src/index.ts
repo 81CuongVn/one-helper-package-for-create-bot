@@ -540,11 +540,12 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
   }
   public getCommandWithName(commandName: string) {
     const commandDir = this.allCommand[commandName];
+    if (!commandDir) {
+      throw new Error("doesn't have command dir")
+    }
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const commandFile = require(commandDir).default;
-    return {
-      [commandName]: commandFile,
-    };
+    const commandFile:ICommand<MetaDataType> = require(commandDir).default;
+    return  commandFile
   }
 
   public setDefaultPrefix(prefix: string) {

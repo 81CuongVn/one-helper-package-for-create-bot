@@ -1,6 +1,6 @@
 {
   "name": "helper-package-create-discord-bot",
-  "version": "1.2.12",
+  "version": "1.2.13",
   "description": "the one package help you create a bot with discord",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
