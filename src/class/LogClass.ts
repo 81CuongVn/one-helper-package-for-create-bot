@@ -15,4 +15,8 @@ export class Log {
   public static debug(processName: string, ...rest: any) {
     console.log(`[${processName}] : `, ...rest);
   }
+  public static logClass(className: string, processName: string, ...rest: any) {
+    console.log(`[${className}][${processName}] : `, ...rest);
+    
+  }
 }

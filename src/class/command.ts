@@ -19,12 +19,13 @@ import {
   InputCallBackForInteraction,
   InputCallBackForMessage,
 } from './../module/InputCallbackFunc';
-import { Log } from './../module/LogClass';
+import { Log } from './LogClass';
 import { OnInteractionCommandDone } from './../module/OnInteractionCommandDone';
 import { OnMessageCommandDone } from './../module/OnMessageCommandDone';
 import { RunFunc } from './../module/RunFunc';
-import { IBotMessageSend, inputType, PromiseOrType } from '../types/command';
+import { IBotMessageSend, inputType } from '../types/command';
 import { ICommand } from './../types/CommandTypes';
+import { PromiseOrType } from '../types/utils.types';
 
 interface CommandEvents<MetaDataType> {
   startScanDir: () => PromiseOrType<void>;
@@ -118,6 +119,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
   testServer: string[];
   commandDirList: string[];
   runFunc: RunFunc<MetaDataType>;
+  ClassName: string;
   constructor(client: Client, input: inputType<MetaDataType>) {
     super();
     this.allCommand = {};
@@ -138,6 +140,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
     this.commandDir = input.commandDir;
     this.testServer = input.testServer || [];
     this.runFunc = new RunFunc(input.alwayRunFunc);
+    this.ClassName = this.constructor.name;
   }
   public async init() {
     this.commandDirList = this.scanDir(this.commandDir);
@@ -285,7 +288,7 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
       this.allCommand[this.allAliases[commandName]];
     if (commandDir) {
       this.LogForMessageAndInteractionFunc(
-        'OnMessageCreate',
+        this.OnMessageCreate.name,
         `${message.author.username} send command : '${commandName}' , All content send '${content}' ...`
       );
       if (!IsReplyMessage) {
@@ -493,11 +496,11 @@ export class Command<MetaDataType> extends EventEmitter.EventEmitter {
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private LogForThisClass(processName: string, ...rest: any) {
-    if (this.isDev) Log.debug(processName, ...rest);
+    if (this.isDev) Log.logClass(this.ClassName, processName, ...rest);
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private LogForMessageAndInteractionFunc(processName: string, ...rest: any) {
-    if (this.LogForMessageAndInteraction) Log.debug(processName, ...rest);
+    if (this.LogForMessageAndInteraction) Log.logClass(this.ClassName, processName, ...rest);
   }
   public SetRpc(rpc: RPC.Presence = {}) {
     this.emit('startSetRpc');

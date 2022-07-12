@@ -5,7 +5,7 @@ import {
   PermissionResolvable,
   ReplyMessageOptions,
 } from 'discord.js/typings';
-import { PromiseOrType } from './command';
+import { PromiseOrType } from './utils.types';
 import {
   InputCallBackForInteraction,
   InputCallBackForMessage,

@@ -1,7 +1,9 @@
-import { IIndexFile } from "../../../src";
-import path from "path"
+import { IIndexFile } from '../../../src';
+import path from 'path';
+import { Constants } from 'discord.js';
+import { MetaData } from '../../types/MetaDataType';
 
-const config: IIndexFile = {
+const config: IIndexFile<MetaData> = {
   name: 'calculator',
   description: 'calculator',
   slash: true,
@@ -13,5 +15,23 @@ const config: IIndexFile = {
     path.join(__dirname, './sum.ts'),
   ],
   defaultOption: {},
+  optionForAllCommand: [
+    {
+      name: 'first_num',
+      type: Constants.ApplicationCommandOptionTypes.INTEGER,
+      description: 'type the first num',
+      required: true,
+    },
+    {
+      name: 'second_num',
+      type: Constants.ApplicationCommandOptionTypes.INTEGER,
+      description: 'type the second num',
+      required: true,
+    },
+  ],
+  aliases: [
+   "cal"
+ ]
 };
 export default config;
+

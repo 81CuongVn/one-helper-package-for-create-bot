@@ -34,9 +34,12 @@ const command = new Command<MetaData>(client, {
     return message.guild?.id === '984361218393374761' ? '!' : '.';
   },
 });
-const subCommand = new SubCommand({
+const subCommand = new SubCommand<MetaData>({
   SubCommandPath: path.join(__dirname, './subCommand'),
-  client
+  client,
+  isDev,
+  LogForMessageAndInteraction: true,
+  metaData:{a:1}
 });
 client.on('ready', async () => {
   await command.init();
@@ -65,5 +68,7 @@ client.on('ready', async () => {
   Log.Log('Client', 'Ready to go! bot name :', client.user?.tag);
   // command.scanFileTsOrJsFile("./commands/")
 });
+
+// ko cần on message hay gì hết =))
 
 client.login(process.env.BOT_KEY);

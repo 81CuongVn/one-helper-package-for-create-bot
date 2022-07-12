@@ -18,4 +18,3 @@ export interface inputType<MetaDataType> {
   testServer?: string[];
   alwayRunFunc?: callbackFunc<MetaDataType>;
 }
-export type PromiseOrType<T> = T | Promise<T>;
